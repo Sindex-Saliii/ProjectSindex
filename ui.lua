@@ -751,7 +751,7 @@ do
 		end
 	end
 
-	local IconList = loadstring(game:HttpGet('https://raw.githubusercontent.com/x3-lunarix/lunarixhub/refs/heads/main/icon.lua'))()
+	local IconList = loadstring(game:HttpGet('https://raw.githubusercontent.com/Sindex-Saliii/ProjectSindex/refs/heads/main/icon.lua'))()
 	function gl(i)
 		local iconData = IconList.Icons[i]
 		if iconData then
