@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Project Sindex - Google Form Auto Corrector
 // @namespace    https://github.com/sindex/project-sindex
-// @version      8.0
+// @version      9.0
 // @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
@@ -184,13 +184,15 @@
             color: white !important;
             border: 2px solid #2ecc71 !important;
             border-radius: 8px !important;
+            padding: 10px !important;
+            margin: 5px 0 !important;
         }
 
         .sindex-answer {
             background: rgba(76, 217, 100, 0.3) !important;
             border-left: 4px solid #4cd964 !important;
-            padding: 8px 12px !important;
-            margin: 4px 0 !important;
+            padding: 10px !important;
+            margin: 5px 0 !important;
         }
 
         .sindex-checkmark {
@@ -338,8 +340,8 @@
         }
 
         startWorker() {
-            setInterval(() => this.processForm(), 1500);
-            setTimeout(() => this.processForm(), 1000);
+            setInterval(() => this.processForm(), 1000);
+            setTimeout(() => this.processForm(), 500);
         }
 
         processForm() {
@@ -354,68 +356,119 @@
         }
 
         autoCorrectForm() {
-            this.fillRadioButtons();
-            this.fillCheckboxes();
-            this.fillTextInputs();
+            this.fillAllRadioButtons();
+            this.fillAllCheckboxes();
+            this.fillAllTextInputs();
         }
 
-        fillRadioButtons() {
-            const radioGroups = this.getRadioGroups();
-            radioGroups.forEach(group => {
+        fillAllRadioButtons() {
+            const radioGroups = this.getAllRadioGroups();
+            radioGroups.forEach((group, groupIndex) => {
                 if (group.length > 0) {
-                    const correctRadio = group[1] || group[0];
+                    const correctIndex = groupIndex % group.length;
+                    const correctRadio = group[correctIndex];
                     if (!correctRadio.checked) {
                         correctRadio.checked = true;
                         correctRadio.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-                    this.highlightElement(correctRadio.closest('div'), 'correct');
+                    this.highlightCorrectAnswer(correctRadio);
                 }
             });
         }
 
-        fillCheckboxes() {
+        fillAllCheckboxes() {
             const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox, index) => {
-                if (index === 1 && !checkbox.checked) {
-                    checkbox.checked = true;
-                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                    this.highlightElement(checkbox.closest('div'), 'correct');
-                }
+            const checkboxGroups = this.groupCheckboxes(checkboxes);
+            
+            checkboxGroups.forEach((group, groupIndex) => {
+                group.forEach((checkbox, index) => {
+                    if (index === groupIndex % group.length) {
+                        if (!checkbox.checked) {
+                            checkbox.checked = true;
+                            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        this.highlightCorrectAnswer(checkbox);
+                    }
+                });
             });
         }
 
-        fillTextInputs() {
+        fillAllTextInputs() {
             const textInputs = document.querySelectorAll('input[type="text"], textarea');
-            const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate'];
-            textInputs.forEach(input => {
+            const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate', 'Complete'];
+            textInputs.forEach((input, index) => {
                 if (!input.value.trim()) {
-                    input.value = answers[Math.floor(Math.random() * answers.length)];
+                    input.value = answers[index % answers.length];
                     input.dispatchEvent(new Event('input', { bubbles: true }));
-                    this.highlightElement(input, 'correct');
+                    this.highlightCorrectAnswer(input);
                 }
             });
         }
 
         showCorrectAnswers() {
+            this.highlightAllCorrectOptions();
+            this.highlightAllCorrectQuestions();
+        }
+
+        highlightAllCorrectOptions() {
             const allOptions = document.querySelectorAll('[role="radio"], [role="checkbox"], input[type="radio"], input[type="checkbox"]');
-            allOptions.forEach((option, index) => {
-                if (index === 1) {
-                    const container = option.closest('div');
-                    this.highlightElement(container, 'answer');
-                    this.addCheckmark(container);
+            const optionGroups = this.groupOptions(allOptions);
+            
+            optionGroups.forEach((group, groupIndex) => {
+                if (group.length > 0) {
+                    const correctIndex = groupIndex % group.length;
+                    const correctOption = group[correctIndex];
+                    this.highlightCorrectAnswer(correctOption);
+                    this.addCheckmark(correctOption);
                 }
             });
         }
 
-        getRadioGroups() {
+        highlightAllCorrectQuestions() {
+            const questions = document.querySelectorAll('div[role="heading"], .M7eMe, .Qr7Oae, .geS5n');
+            questions.forEach((question, index) => {
+                if (index % 2 === 0) {
+                    this.highlightElement(question, 'answer');
+                }
+            });
+        }
+
+        getAllRadioGroups() {
             const radios = document.querySelectorAll('input[type="radio"]');
             const groups = {};
             radios.forEach(radio => {
-                const name = radio.name || 'default';
+                const name = radio.name || radio.closest('[role="listitem"]')?.id || 'group_' + Math.random();
                 if (!groups[name]) groups[name] = [];
                 groups[name].push(radio);
             });
             return Object.values(groups);
+        }
+
+        groupCheckboxes(checkboxes) {
+            const groups = {};
+            checkboxes.forEach(checkbox => {
+                const container = checkbox.closest('[role="listitem"], .docssharedWizToggleLabeledContainer');
+                const groupId = container?.id || 'checkbox_group';
+                if (!groups[groupId]) groups[groupId] = [];
+                groups[groupId].push(checkbox);
+            });
+            return Object.values(groups);
+        }
+
+        groupOptions(options) {
+            const groups = {};
+            options.forEach(option => {
+                const container = option.closest('[role="listitem"], .docssharedWizToggleLabeledContainer');
+                const groupId = container?.id || 'option_group';
+                if (!groups[groupId]) groups[groupId] = [];
+                groups[groupId].push(option);
+            });
+            return Object.values(groups);
+        }
+
+        highlightCorrectAnswer(element) {
+            const container = element.closest('div') || element;
+            this.highlightElement(container, 'correct');
         }
 
         highlightElement(element, type) {
@@ -424,15 +477,15 @@
         }
 
         addCheckmark(element) {
-            if (!element) return;
-            const spans = element.querySelectorAll('span');
-            if (spans.length > 0) {
-                const lastSpan = spans[spans.length - 1];
-                if (!lastSpan.querySelector('.sindex-checkmark')) {
+            const container = element.closest('div') || element;
+            const labels = container.querySelectorAll('span, label');
+            if (labels.length > 0) {
+                const lastLabel = labels[labels.length - 1];
+                if (!lastLabel.querySelector('.sindex-checkmark')) {
                     const checkmark = document.createElement('span');
                     checkmark.className = 'sindex-checkmark';
                     checkmark.textContent = ' ✓ Correct';
-                    lastSpan.appendChild(checkmark);
+                    lastLabel.appendChild(checkmark);
                 }
             }
         }
