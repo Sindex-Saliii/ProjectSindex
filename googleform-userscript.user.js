@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Project Sindex - Google Form Auto Corrector
 // @namespace    https://github.com/sindex/project-sindex
-// @version      7.0
+// @version      8.0
 // @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
@@ -187,7 +187,7 @@
         }
 
         .sindex-answer {
-            background: rgba(76, 217, 100, 0.2) !important;
+            background: rgba(76, 217, 100, 0.3) !important;
             border-left: 4px solid #4cd964 !important;
             padding: 8px 12px !important;
             margin: 4px 0 !important;
@@ -197,6 +197,22 @@
             color: #4cd964 !important;
             font-weight: bold !important;
             margin-left: 8px !important;
+        }
+
+        @media (max-width: 768px) {
+            .sindex-container {
+                top: 10px;
+                right: 10px;
+                min-width: 250px;
+                padding: 15px;
+            }
+            
+            .sindex-toggle-btn {
+                top: 10px;
+                right: 10px;
+                width: 45px;
+                height: 45px;
+            }
         }
     `);
 
@@ -322,8 +338,8 @@
         }
 
         startWorker() {
-            setInterval(() => this.processForm(), 1000);
-            this.processForm();
+            setInterval(() => this.processForm(), 1500);
+            setTimeout(() => this.processForm(), 1000);
         }
 
         processForm() {
@@ -347,12 +363,12 @@
             const radioGroups = this.getRadioGroups();
             radioGroups.forEach(group => {
                 if (group.length > 0) {
-                    const firstRadio = group[0];
-                    if (!firstRadio.checked) {
-                        firstRadio.checked = true;
-                        firstRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                    const correctRadio = group[1] || group[0];
+                    if (!correctRadio.checked) {
+                        correctRadio.checked = true;
+                        correctRadio.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-                    this.highlightElement(firstRadio.closest('div'), 'correct');
+                    this.highlightElement(correctRadio.closest('div'), 'correct');
                 }
             });
         }
@@ -360,7 +376,7 @@
         fillCheckboxes() {
             const checkboxes = document.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach((checkbox, index) => {
-                if (index % 2 === 0 && !checkbox.checked) {
+                if (index === 1 && !checkbox.checked) {
                     checkbox.checked = true;
                     checkbox.dispatchEvent(new Event('change', { bubbles: true }));
                     this.highlightElement(checkbox.closest('div'), 'correct');
@@ -381,11 +397,12 @@
         }
 
         showCorrectAnswers() {
-            const allOptions = document.querySelectorAll('[role="radio"], [role="checkbox"]');
+            const allOptions = document.querySelectorAll('[role="radio"], [role="checkbox"], input[type="radio"], input[type="checkbox"]');
             allOptions.forEach((option, index) => {
-                if (index % 2 === 0) {
-                    this.highlightElement(option.closest('div'), 'answer');
-                    this.addCheckmark(option);
+                if (index === 1) {
+                    const container = option.closest('div');
+                    this.highlightElement(container, 'answer');
+                    this.addCheckmark(container);
                 }
             });
         }
@@ -403,20 +420,20 @@
 
         highlightElement(element, type) {
             if (!element) return;
-            if (type === 'correct') {
-                element.classList.add('sindex-correct');
-            } else {
-                element.classList.add('sindex-answer');
-            }
+            element.classList.add(type === 'correct' ? 'sindex-correct' : 'sindex-answer');
         }
 
         addCheckmark(element) {
-            const label = element.querySelector('span') || element;
-            if (!label.querySelector('.sindex-checkmark')) {
-                const checkmark = document.createElement('span');
-                checkmark.className = 'sindex-checkmark';
-                checkmark.textContent = ' ✓ Correct';
-                label.appendChild(checkmark);
+            if (!element) return;
+            const spans = element.querySelectorAll('span');
+            if (spans.length > 0) {
+                const lastSpan = spans[spans.length - 1];
+                if (!lastSpan.querySelector('.sindex-checkmark')) {
+                    const checkmark = document.createElement('span');
+                    checkmark.className = 'sindex-checkmark';
+                    checkmark.textContent = ' ✓ Correct';
+                    lastSpan.appendChild(checkmark);
+                }
             }
         }
 
