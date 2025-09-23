@@ -1,14 +1,16 @@
 // ==UserScript==
 // @name         Project Sindex - Google Form Auto Corrector
-// @namespace    http://tampermonkey.net/
-// @version      1.2
+// @namespace    https://github.com/sindex/project-sindex
+// @version      1.3
 // @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
-// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
+// @downloadURL  https://raw.githubusercontent.com/sindex/project-sindex/main/project-sindex.user.js
+// @updateURL    https://raw.githubusercontent.com/sindex/project-sindex/main/project-sindex.user.js
+// @icon         https://www.google.com/favicon.ico
 // ==/UserScript==
 
 (function() {
@@ -169,6 +171,15 @@
             padding-left: 10px !important;
             background: rgba(76, 217, 100, 0.1) !important;
         }
+
+        .sindex-footer {
+            margin-top: 10px;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+        }
     `);
 
     class ProjectSindex {
@@ -209,6 +220,7 @@
                         </div>
                     </div>
                     <div class="sindex-status" id="sindexStatus">Ready</div>
+                    <div class="sindex-footer">Made with ❤️ by Sindex.Salii & Sindex.kaow</div>
                 </div>
             `;
 
@@ -328,5 +340,11 @@
         }
     }
 
-    setTimeout(() => new ProjectSindex(), 1000);
+    if (typeof $ !== 'undefined') {
+        setTimeout(() => new ProjectSindex(), 1000);
+    } else {
+        window.addEventListener('load', () => {
+            setTimeout(() => new ProjectSindex(), 1000);
+        });
+    }
 })();
