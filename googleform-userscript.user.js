@@ -2,7 +2,7 @@
 // @name         Project Sindex - Google Form Auto Corrector
 // @namespace    http://tampermonkey.net/
 // @version      1.2
-// @description  Auto correct Google Forms for educational purposes with beautiful toggle controls
+// @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
 // @grant        GM_addStyle
