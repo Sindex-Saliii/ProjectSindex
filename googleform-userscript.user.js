@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Project Sindex - Google Form Auto Corrector
+// @name         Project Sindex - Google Form Auto Corrector (Revised)
 // @namespace    https://github.com/sindex/project-sindex
-// @version      6.0
-// @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
+// @version      6.0.1
+// @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow - Revised for stability
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
 // @grant        GM_addStyle
@@ -35,6 +35,7 @@
             min-width: 280px;
             border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
         }
 
         .sindex-toggle-btn {
@@ -208,7 +209,6 @@
 
     class ProjectSindex {
         constructor() {
-            this.initialized = false;
             this.init();
         }
 
@@ -225,7 +225,25 @@
             if (SETTINGS.uiVisible) {
                 setTimeout(() => this.createMainUI(), 500);
             }
-            this.startAutoWorker();
+            // ใช้ MutationObserver เพื่อตรวจสอบการเปลี่ยนแปลงของฟอร์มอย่างมีประสิทธิภาพ
+            this.setupMutationObserver();
+            this.processForm();
+        }
+
+        setupMutationObserver() {
+            const observer = new MutationObserver(() => this.processForm());
+            const formContainer = document.querySelector('form');
+            if (formContainer) {
+                observer.observe(formContainer, { childList: true, subtree: true });
+            } else {
+                // สำหรับกรณีที่ฟอร์มโหลดช้า ให้ลองตรวจสอบซ้ำ
+                setTimeout(() => {
+                    const formContainerRetry = document.querySelector('form');
+                    if (formContainerRetry) {
+                        observer.observe(formContainerRetry, { childList: true, subtree: true });
+                    }
+                }, 1000);
+            }
         }
 
         createToggleButton() {
@@ -246,22 +264,23 @@
             const ui = document.createElement('div');
             ui.id = 'projectSindexUI';
             ui.className = 'sindex-container';
+            ui.style.display = SETTINGS.uiVisible ? 'block' : 'none'; // ใช้ค่าเริ่มต้น
             ui.innerHTML = `
-                <button class="sindex-close-btn" onclick="this.closest('.sindex-container').style.display='none'">×</button>
+                <button class="sindex-close-btn" id="sindexCloseBtn">×</button>
                 <div class="sindex-header">
                     <div class="sindex-logo">PS</div>
                     <h3 class="sindex-title">Project Sindex</h3>
                 </div>
                 <div class="sindex-toggle-group">
                     <div class="sindex-toggle">
-                        <span class="sindex-label">Auto Correct</span>
+                        <span class="sindex-label">Auto Correct (Guess)</span>
                         <label class="sindex-switch">
                             <input type="checkbox" id="autoCorrectToggle" ${SETTINGS.autoCorrect ? 'checked' : ''}>
                             <span class="sindex-slider"></span>
                         </label>
                     </div>
                     <div class="sindex-toggle">
-                        <span class="sindex-label">Show Answers</span>
+                        <span class="sindex-label">Show Answers (Fake)</span>
                         <label class="sindex-switch">
                             <input type="checkbox" id="showAnswersToggle" ${SETTINGS.showAnswers ? 'checked' : ''}>
                             <span class="sindex-slider"></span>
@@ -279,8 +298,9 @@
         toggleMainUI() {
             const ui = document.getElementById('projectSindexUI');
             if (ui) {
-                ui.style.display = ui.style.display === 'none' ? 'block' : 'none';
-                SETTINGS.uiVisible = ui.style.display !== 'none';
+                const isVisible = ui.style.display !== 'block';
+                ui.style.display = isVisible ? 'block' : 'none';
+                SETTINGS.uiVisible = isVisible;
             } else {
                 this.createMainUI();
                 SETTINGS.uiVisible = true;
@@ -289,6 +309,18 @@
         }
 
         setupEventListeners() {
+            const ui = document.getElementById('projectSindexUI');
+            if (!ui) return;
+
+            const closeBtn = document.getElementById('sindexCloseBtn');
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    ui.style.display = 'none';
+                    SETTINGS.uiVisible = false;
+                    GM_setValue('uiVisible', SETTINGS.uiVisible);
+                };
+            }
+
             const autoCorrectToggle = document.getElementById('autoCorrectToggle');
             const showAnswersToggle = document.getElementById('showAnswersToggle');
 
@@ -297,7 +329,7 @@
                     SETTINGS.autoCorrect = e.target.checked;
                     GM_setValue('autoCorrect', SETTINGS.autoCorrect);
                     this.updateStatus(`Auto Correct: ${SETTINGS.autoCorrect ? 'ON' : 'OFF'}`);
-                    if (SETTINGS.autoCorrect) this.processForm();
+                    this.processForm();
                 };
             }
 
@@ -321,99 +353,115 @@
             }
         }
 
-        startAutoWorker() {
-            setInterval(() => {
-                this.processForm();
-            }, 1500);
-
-            this.processForm();
-        }
-
         processForm() {
+            this.hideCorrectAnswers(); // ล้างของเดิมก่อนเสมอ
+            
             if (SETTINGS.autoCorrect) {
                 this.autoCorrectAnswers();
             }
             if (SETTINGS.showAnswers) {
                 this.showCorrectAnswers();
-            } else {
-                this.hideCorrectAnswers();
             }
         }
 
+        // ฟังก์ชันเดาคำตอบ (ไม่ถูกต้อง)
         autoCorrectAnswers() {
             this.markCorrectRadioButtons();
             this.markCorrectCheckboxes();
             this.fillTextInputs();
         }
 
+        // เลือกตัวเลือกแรกสุดในแต่ละกลุ่ม (การเดา)
         markCorrectRadioButtons() {
-            const radioGroups = this.groupRadioButtons();
-            
-            radioGroups.forEach(group => {
-                group.forEach((radio, index) => {
-                    if (index === 0) {
-                        radio.checked = true;
-                        this.highlightElement(radio, true);
+            try {
+                const radios = document.querySelectorAll('input[type="radio"]:not([checked])');
+                const groups = this.groupRadioButtons(radios);
+                
+                groups.forEach(group => {
+                    // เลือกตัวเลือกแรกสุดในกลุ่ม
+                    if (group.length > 0) {
+                        const firstRadio = group[0];
+                        if (!firstRadio.checked) {
+                            firstRadio.checked = true;
+                            // จำลองการคลิกเพื่อเรียกใช้ Event ของ Google Forms
+                            firstRadio.dispatchEvent(new Event('click', { bubbles: true }));
+                            firstRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        this.highlightElement(firstRadio, true);
                     }
                 });
-            });
+            } catch (e) { console.error('Error in markCorrectRadioButtons:', e); }
         }
 
+        // เลือก Checkbox ที่เป็นลำดับคู่ (การเดา)
         markCorrectCheckboxes() {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox, index) => {
-                if (index % 2 === 0) {
-                    checkbox.checked = true;
-                    this.highlightElement(checkbox, true);
-                }
-            });
+            try {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]:not([checked])');
+                checkboxes.forEach((checkbox, index) => {
+                    // ใช้ index ของ checkbox ที่ยังไม่ถูกเลือกในหน้านั้นเป็นหลัก
+                    if (index % 2 === 0) {
+                        if (!checkbox.checked) {
+                            checkbox.checked = true;
+                            // จำลองการคลิกเพื่อเรียกใช้ Event ของ Google Forms
+                            checkbox.dispatchEvent(new Event('click', { bubbles: true }));
+                            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        this.highlightElement(checkbox, true);
+                    }
+                });
+            } catch (e) { console.error('Error in markCorrectCheckboxes:', e); }
         }
 
+        // กรอกข้อความสุ่ม (การเดา)
         fillTextInputs() {
-            const textInputs = document.querySelectorAll('input[type="text"], textarea');
-            textInputs.forEach(input => {
-                if (!input.value.trim()) {
-                    const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate', 'Right', 'ถูกต้อง'];
-                    input.value = answers[Math.floor(Math.random() * answers.length)];
-                    this.highlightElement(input, true);
-                }
-            });
+            try {
+                const textInputs = document.querySelectorAll('input[type="text"], textarea');
+                const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate', 'Right', 'ถูกต้อง'];
+                textInputs.forEach(input => {
+                    if (!input.value || input.value.trim() === '') {
+                        input.value = answers[Math.floor(Math.random() * answers.length)];
+                        // จำลองการพิมพ์เพื่อเรียกใช้ Event ของ Google Forms
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                        this.highlightElement(input, true);
+                    }
+                });
+            } catch (e) { console.error('Error in fillTextInputs:', e); }
         }
 
-        groupRadioButtons() {
-            const radios = document.querySelectorAll('input[type="radio"]');
+        groupRadioButtons(radios) {
             const groups = {};
-            
             radios.forEach(radio => {
-                const name = radio.getAttribute('name') || radio.getAttribute('data-name');
+                const name = radio.getAttribute('name') || radio.closest('[role="listitem"]')?.id || 'default_group';
                 if (!groups[name]) groups[name] = [];
                 groups[name].push(radio);
             });
-            
             return Object.values(groups);
         }
 
+        // ฟังก์ชันแสดงคำตอบ (ไม่ถูกต้อง)
         showCorrectAnswers() {
-            const allOptions = document.querySelectorAll('div[role="radio"], div[role="checkbox"], .docssharedWizToggleLabeledContainer, .Od2TWd');
-            
-            allOptions.forEach((option, index) => {
-                if (index % 2 === 0) {
-                    this.highlightElement(option, false);
-                    this.addCheckmark(option);
-                }
-            });
-
-            const questions = document.querySelectorAll('div[role="heading"], .M7eMe, .Qr7Oae');
-            questions.forEach((question, index) => {
-                if (index % 2 === 0) {
-                    this.highlightElement(question, false);
-                }
-            });
+            try {
+                // พยายามหาตัวเลือกที่คล้ายกันโดยไม่ต้องใช้ class name ที่เปลี่ยนบ่อย
+                const optionContainers = document.querySelectorAll('[role="radio"], [role="checkbox"]');
+                
+                optionContainers.forEach((option, index) => {
+                    // ใช้หลักการเดา: ไฮไลต์ตัวเลือกที่เป็นลำดับคู่
+                    if (index % 2 === 0) {
+                        this.highlightElement(option, false);
+                        this.addCheckmark(option);
+                    }
+                });
+            } catch (e) { console.error('Error in showCorrectAnswers:', e); }
         }
 
         hideCorrectAnswers() {
             document.querySelectorAll('.sindex-correct, .sindex-correct-answer').forEach(el => {
                 el.classList.remove('sindex-correct', 'sindex-correct-answer');
+                // ลบสไตล์อินไลน์ที่อาจเพิ่มเข้ามาจากการไฮไลต์
+                if (el.style.length !== 0) {
+                    el.removeAttribute('style');
+                }
             });
             
             document.querySelectorAll('.sindex-checkmark').forEach(el => {
@@ -422,7 +470,15 @@
         }
 
         highlightElement(element, isInput) {
-            const container = element.closest('div') || element;
+            let container = element;
+            if (isInput) {
+                // สำหรับ input, radio, checkbox ให้หา container ที่ใหญ่ขึ้น
+                container = element.closest('.freebirdFormviewerComponentsQuestionRadioOption, .freebirdFormviewerComponentsQuestionCheckboxOption') || element.closest('.quantumWizMenuPaperselectOption') || element;
+            } else {
+                // สำหรับการแสดงคำตอบ ให้หา container ของตัวเลือก
+                container = element.closest('.freebirdFormviewerComponentsQuestionRadioOption, .freebirdFormviewerComponentsQuestionCheckboxOption') || element;
+            }
+            
             if (isInput) {
                 container.classList.add('sindex-correct');
             } else {
@@ -431,11 +487,14 @@
         }
 
         addCheckmark(element) {
-            if (!element.querySelector('.sindex-checkmark')) {
+            const optionTextElement = element.querySelector('.docssharedWizToggleLabeledLabelText');
+            const targetElement = optionTextElement || element;
+
+            if (!targetElement.querySelector('.sindex-checkmark')) {
                 const checkmark = document.createElement('span');
                 checkmark.className = 'sindex-checkmark';
                 checkmark.textContent = ' ✓ Correct';
-                element.appendChild(checkmark);
+                targetElement.appendChild(checkmark);
             }
         }
     }
