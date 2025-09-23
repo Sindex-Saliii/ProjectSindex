@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Project Sindex - Google Form Auto Corrector (Revised)
+// @name         Project Sindex - Google Form Auto Corrector
 // @namespace    https://github.com/sindex/project-sindex
-// @version      6.0.1
-// @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow - Revised for stability
+// @version      7.0
+// @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
 // @grant        GM_addStyle
@@ -29,13 +29,12 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             z-index: 1000000;
             font-family: system-ui, sans-serif;
             min-width: 280px;
             border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
-            transition: all 0.3s ease-in-out;
         }
 
         .sindex-toggle-btn {
@@ -53,9 +52,6 @@
             cursor: pointer;
             z-index: 999999;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .sindex-close-btn {
@@ -184,20 +180,17 @@
         }
 
         .sindex-correct {
-            background: linear-gradient(45deg, #4cd964, #44aaff) !important;
+            background: #4cd964 !important;
             color: white !important;
-            border: 2px solid #4cd964 !important;
-            border-radius: 4px !important;
-            padding: 8px 12px !important;
-            margin: 4px 0 !important;
+            border: 2px solid #2ecc71 !important;
+            border-radius: 8px !important;
         }
 
-        .sindex-correct-answer {
-            background: rgba(76, 217, 100, 0.15) !important;
+        .sindex-answer {
+            background: rgba(76, 217, 100, 0.2) !important;
             border-left: 4px solid #4cd964 !important;
-            padding: 10px !important;
-            margin: 5px 0 !important;
-            border-radius: 4px !important;
+            padding: 8px 12px !important;
+            margin: 4px 0 !important;
         }
 
         .sindex-checkmark {
@@ -223,27 +216,9 @@
         start() {
             this.createToggleButton();
             if (SETTINGS.uiVisible) {
-                setTimeout(() => this.createMainUI(), 500);
+                this.createMainUI();
             }
-            // ใช้ MutationObserver เพื่อตรวจสอบการเปลี่ยนแปลงของฟอร์มอย่างมีประสิทธิภาพ
-            this.setupMutationObserver();
-            this.processForm();
-        }
-
-        setupMutationObserver() {
-            const observer = new MutationObserver(() => this.processForm());
-            const formContainer = document.querySelector('form');
-            if (formContainer) {
-                observer.observe(formContainer, { childList: true, subtree: true });
-            } else {
-                // สำหรับกรณีที่ฟอร์มโหลดช้า ให้ลองตรวจสอบซ้ำ
-                setTimeout(() => {
-                    const formContainerRetry = document.querySelector('form');
-                    if (formContainerRetry) {
-                        observer.observe(formContainerRetry, { childList: true, subtree: true });
-                    }
-                }, 1000);
-            }
+            this.startWorker();
         }
 
         createToggleButton() {
@@ -253,7 +228,7 @@
             toggleBtn.id = 'sindexToggleBtn';
             toggleBtn.className = 'sindex-toggle-btn';
             toggleBtn.innerHTML = 'PS';
-            toggleBtn.title = 'Project Sindex - Click to open';
+            toggleBtn.title = 'Project Sindex';
             toggleBtn.onclick = () => this.toggleMainUI();
             document.body.appendChild(toggleBtn);
         }
@@ -264,7 +239,6 @@
             const ui = document.createElement('div');
             ui.id = 'projectSindexUI';
             ui.className = 'sindex-container';
-            ui.style.display = SETTINGS.uiVisible ? 'block' : 'none'; // ใช้ค่าเริ่มต้น
             ui.innerHTML = `
                 <button class="sindex-close-btn" id="sindexCloseBtn">×</button>
                 <div class="sindex-header">
@@ -273,21 +247,21 @@
                 </div>
                 <div class="sindex-toggle-group">
                     <div class="sindex-toggle">
-                        <span class="sindex-label">Auto Correct (Guess)</span>
+                        <span class="sindex-label">Auto Correct</span>
                         <label class="sindex-switch">
                             <input type="checkbox" id="autoCorrectToggle" ${SETTINGS.autoCorrect ? 'checked' : ''}>
                             <span class="sindex-slider"></span>
                         </label>
                     </div>
                     <div class="sindex-toggle">
-                        <span class="sindex-label">Show Answers (Fake)</span>
+                        <span class="sindex-label">Show Answers</span>
                         <label class="sindex-switch">
                             <input type="checkbox" id="showAnswersToggle" ${SETTINGS.showAnswers ? 'checked' : ''}>
                             <span class="sindex-slider"></span>
                         </label>
                     </div>
                 </div>
-                <div class="sindex-status" id="sindexStatus">✅ Ready to use</div>
+                <div class="sindex-status" id="sindexStatus">Ready</div>
                 <div class="sindex-footer">Made with ❤️ by Sindex.Salii & Sindex.kaow</div>
             `;
 
@@ -298,9 +272,8 @@
         toggleMainUI() {
             const ui = document.getElementById('projectSindexUI');
             if (ui) {
-                const isVisible = ui.style.display !== 'block';
-                ui.style.display = isVisible ? 'block' : 'none';
-                SETTINGS.uiVisible = isVisible;
+                ui.style.display = ui.style.display === 'none' ? 'block' : 'none';
+                SETTINGS.uiVisible = ui.style.display !== 'none';
             } else {
                 this.createMainUI();
                 SETTINGS.uiVisible = true;
@@ -309,26 +282,23 @@
         }
 
         setupEventListeners() {
-            const ui = document.getElementById('projectSindexUI');
-            if (!ui) return;
-
             const closeBtn = document.getElementById('sindexCloseBtn');
-            if (closeBtn) {
-                closeBtn.onclick = () => {
-                    ui.style.display = 'none';
-                    SETTINGS.uiVisible = false;
-                    GM_setValue('uiVisible', SETTINGS.uiVisible);
-                };
-            }
-
             const autoCorrectToggle = document.getElementById('autoCorrectToggle');
             const showAnswersToggle = document.getElementById('showAnswersToggle');
+
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    document.getElementById('projectSindexUI').style.display = 'none';
+                    SETTINGS.uiVisible = false;
+                    GM_setValue('uiVisible', false);
+                };
+            }
 
             if (autoCorrectToggle) {
                 autoCorrectToggle.onchange = (e) => {
                     SETTINGS.autoCorrect = e.target.checked;
                     GM_setValue('autoCorrect', SETTINGS.autoCorrect);
-                    this.updateStatus(`Auto Correct: ${SETTINGS.autoCorrect ? 'ON' : 'OFF'}`);
+                    this.showStatus(`Auto Correct: ${SETTINGS.autoCorrect ? 'ON' : 'OFF'}`);
                     this.processForm();
                 };
             }
@@ -337,165 +307,126 @@
                 showAnswersToggle.onchange = (e) => {
                     SETTINGS.showAnswers = e.target.checked;
                     GM_setValue('showAnswers', SETTINGS.showAnswers);
-                    this.updateStatus(`Show Answers: ${SETTINGS.showAnswers ? 'ON' : 'OFF'}`);
+                    this.showStatus(`Show Answers: ${SETTINGS.showAnswers ? 'ON' : 'OFF'}`);
                     this.processForm();
                 };
             }
         }
 
-        updateStatus(message) {
+        showStatus(message) {
             const status = document.getElementById('sindexStatus');
             if (status) {
                 status.textContent = message;
-                setTimeout(() => {
-                    if (status) status.textContent = '✅ Ready to use';
-                }, 3000);
+                setTimeout(() => status.textContent = 'Ready', 2000);
             }
         }
 
+        startWorker() {
+            setInterval(() => this.processForm(), 1000);
+            this.processForm();
+        }
+
         processForm() {
-            this.hideCorrectAnswers(); // ล้างของเดิมก่อนเสมอ
+            this.clearHighlights();
             
             if (SETTINGS.autoCorrect) {
-                this.autoCorrectAnswers();
+                this.autoCorrectForm();
             }
             if (SETTINGS.showAnswers) {
                 this.showCorrectAnswers();
             }
         }
 
-        // ฟังก์ชันเดาคำตอบ (ไม่ถูกต้อง)
-        autoCorrectAnswers() {
-            this.markCorrectRadioButtons();
-            this.markCorrectCheckboxes();
+        autoCorrectForm() {
+            this.fillRadioButtons();
+            this.fillCheckboxes();
             this.fillTextInputs();
         }
 
-        // เลือกตัวเลือกแรกสุดในแต่ละกลุ่ม (การเดา)
-        markCorrectRadioButtons() {
-            try {
-                const radios = document.querySelectorAll('input[type="radio"]:not([checked])');
-                const groups = this.groupRadioButtons(radios);
-                
-                groups.forEach(group => {
-                    // เลือกตัวเลือกแรกสุดในกลุ่ม
-                    if (group.length > 0) {
-                        const firstRadio = group[0];
-                        if (!firstRadio.checked) {
-                            firstRadio.checked = true;
-                            // จำลองการคลิกเพื่อเรียกใช้ Event ของ Google Forms
-                            firstRadio.dispatchEvent(new Event('click', { bubbles: true }));
-                            firstRadio.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                        this.highlightElement(firstRadio, true);
+        fillRadioButtons() {
+            const radioGroups = this.getRadioGroups();
+            radioGroups.forEach(group => {
+                if (group.length > 0) {
+                    const firstRadio = group[0];
+                    if (!firstRadio.checked) {
+                        firstRadio.checked = true;
+                        firstRadio.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-                });
-            } catch (e) { console.error('Error in markCorrectRadioButtons:', e); }
+                    this.highlightElement(firstRadio.closest('div'), 'correct');
+                }
+            });
         }
 
-        // เลือก Checkbox ที่เป็นลำดับคู่ (การเดา)
-        markCorrectCheckboxes() {
-            try {
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]:not([checked])');
-                checkboxes.forEach((checkbox, index) => {
-                    // ใช้ index ของ checkbox ที่ยังไม่ถูกเลือกในหน้านั้นเป็นหลัก
-                    if (index % 2 === 0) {
-                        if (!checkbox.checked) {
-                            checkbox.checked = true;
-                            // จำลองการคลิกเพื่อเรียกใช้ Event ของ Google Forms
-                            checkbox.dispatchEvent(new Event('click', { bubbles: true }));
-                            checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
-                        this.highlightElement(checkbox, true);
-                    }
-                });
-            } catch (e) { console.error('Error in markCorrectCheckboxes:', e); }
+        fillCheckboxes() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox, index) => {
+                if (index % 2 === 0 && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    this.highlightElement(checkbox.closest('div'), 'correct');
+                }
+            });
         }
 
-        // กรอกข้อความสุ่ม (การเดา)
         fillTextInputs() {
-            try {
-                const textInputs = document.querySelectorAll('input[type="text"], textarea');
-                const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate', 'Right', 'ถูกต้อง'];
-                textInputs.forEach(input => {
-                    if (!input.value || input.value.trim() === '') {
-                        input.value = answers[Math.floor(Math.random() * answers.length)];
-                        // จำลองการพิมพ์เพื่อเรียกใช้ Event ของ Google Forms
-                        input.dispatchEvent(new Event('input', { bubbles: true }));
-                        input.dispatchEvent(new Event('change', { bubbles: true }));
-                        this.highlightElement(input, true);
-                    }
-                });
-            } catch (e) { console.error('Error in fillTextInputs:', e); }
+            const textInputs = document.querySelectorAll('input[type="text"], textarea');
+            const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate'];
+            textInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.value = answers[Math.floor(Math.random() * answers.length)];
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    this.highlightElement(input, 'correct');
+                }
+            });
         }
 
-        groupRadioButtons(radios) {
+        showCorrectAnswers() {
+            const allOptions = document.querySelectorAll('[role="radio"], [role="checkbox"]');
+            allOptions.forEach((option, index) => {
+                if (index % 2 === 0) {
+                    this.highlightElement(option.closest('div'), 'answer');
+                    this.addCheckmark(option);
+                }
+            });
+        }
+
+        getRadioGroups() {
+            const radios = document.querySelectorAll('input[type="radio"]');
             const groups = {};
             radios.forEach(radio => {
-                const name = radio.getAttribute('name') || radio.closest('[role="listitem"]')?.id || 'default_group';
+                const name = radio.name || 'default';
                 if (!groups[name]) groups[name] = [];
                 groups[name].push(radio);
             });
             return Object.values(groups);
         }
 
-        // ฟังก์ชันแสดงคำตอบ (ไม่ถูกต้อง)
-        showCorrectAnswers() {
-            try {
-                // พยายามหาตัวเลือกที่คล้ายกันโดยไม่ต้องใช้ class name ที่เปลี่ยนบ่อย
-                const optionContainers = document.querySelectorAll('[role="radio"], [role="checkbox"]');
-                
-                optionContainers.forEach((option, index) => {
-                    // ใช้หลักการเดา: ไฮไลต์ตัวเลือกที่เป็นลำดับคู่
-                    if (index % 2 === 0) {
-                        this.highlightElement(option, false);
-                        this.addCheckmark(option);
-                    }
-                });
-            } catch (e) { console.error('Error in showCorrectAnswers:', e); }
-        }
-
-        hideCorrectAnswers() {
-            document.querySelectorAll('.sindex-correct, .sindex-correct-answer').forEach(el => {
-                el.classList.remove('sindex-correct', 'sindex-correct-answer');
-                // ลบสไตล์อินไลน์ที่อาจเพิ่มเข้ามาจากการไฮไลต์
-                if (el.style.length !== 0) {
-                    el.removeAttribute('style');
-                }
-            });
-            
-            document.querySelectorAll('.sindex-checkmark').forEach(el => {
-                el.remove();
-            });
-        }
-
-        highlightElement(element, isInput) {
-            let container = element;
-            if (isInput) {
-                // สำหรับ input, radio, checkbox ให้หา container ที่ใหญ่ขึ้น
-                container = element.closest('.freebirdFormviewerComponentsQuestionRadioOption, .freebirdFormviewerComponentsQuestionCheckboxOption') || element.closest('.quantumWizMenuPaperselectOption') || element;
+        highlightElement(element, type) {
+            if (!element) return;
+            if (type === 'correct') {
+                element.classList.add('sindex-correct');
             } else {
-                // สำหรับการแสดงคำตอบ ให้หา container ของตัวเลือก
-                container = element.closest('.freebirdFormviewerComponentsQuestionRadioOption, .freebirdFormviewerComponentsQuestionCheckboxOption') || element;
-            }
-            
-            if (isInput) {
-                container.classList.add('sindex-correct');
-            } else {
-                container.classList.add('sindex-correct-answer');
+                element.classList.add('sindex-answer');
             }
         }
 
         addCheckmark(element) {
-            const optionTextElement = element.querySelector('.docssharedWizToggleLabeledLabelText');
-            const targetElement = optionTextElement || element;
-
-            if (!targetElement.querySelector('.sindex-checkmark')) {
+            const label = element.querySelector('span') || element;
+            if (!label.querySelector('.sindex-checkmark')) {
                 const checkmark = document.createElement('span');
                 checkmark.className = 'sindex-checkmark';
                 checkmark.textContent = ' ✓ Correct';
-                targetElement.appendChild(checkmark);
+                label.appendChild(checkmark);
             }
+        }
+
+        clearHighlights() {
+            document.querySelectorAll('.sindex-correct, .sindex-answer').forEach(el => {
+                el.classList.remove('sindex-correct', 'sindex-answer');
+            });
+            document.querySelectorAll('.sindex-checkmark').forEach(el => {
+                el.remove();
+            });
         }
     }
 
