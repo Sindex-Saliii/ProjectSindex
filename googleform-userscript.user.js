@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Project Sindex - Google Form Auto Corrector
 // @namespace    https://github.com/sindex/project-sindex
-// @version      1.3
+// @version      1.4
 // @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
+// @match        https://docs.google.com/forms/d/e/*/viewform*
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // @downloadURL  https://raw.githubusercontent.com/sindex/project-sindex/main/project-sindex.user.js
 // @updateURL    https://raw.githubusercontent.com/sindex/project-sindex/main/project-sindex.user.js
 // @icon         https://www.google.com/favicon.ico
@@ -30,7 +32,7 @@
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1);
-            z-index: 10000;
+            z-index: 999999;
             font-family: 'Inter', system-ui, sans-serif;
             min-width: 280px;
             backdrop-filter: blur(10px);
@@ -180,22 +182,49 @@
             border-top: 1px solid rgba(255,255,255,0.1);
             padding-top: 10px;
         }
+
+        .sindex-hidden {
+            display: none !important;
+        }
     `);
 
     class ProjectSindex {
         constructor() {
             this.isDragging = false;
             this.dragOffset = { x: 0, y: 0 };
+            this.uiCreated = false;
             this.init();
         }
 
         init() {
-            this.createUI();
-            this.attachEventListeners();
-            this.startFormObserver();
+            this.waitForGoogleForm().then(() => {
+                this.createUI();
+                this.attachEventListeners();
+                this.startFormObserver();
+            }).catch(error => {
+                console.log('Project Sindex: Error initializing', error);
+            });
+        }
+
+        waitForGoogleForm() {
+            return new Promise((resolve) => {
+                const checkForm = () => {
+                    if (document.querySelector('form') || 
+                        document.querySelector('[role="form"]') ||
+                        document.querySelector('.freebirdFormviewerViewFormContent') ||
+                        document.querySelector('[data-params*="form"]')) {
+                        resolve();
+                    } else {
+                        setTimeout(checkForm, 500);
+                    }
+                };
+                checkForm();
+            });
         }
 
         createUI() {
+            if (this.uiCreated) return;
+            
             const uiHTML = `
                 <div class="sindex-container" id="projectSindexUI">
                     <div class="sindex-drag-handle">⠿</div>
@@ -224,47 +253,48 @@
                 </div>
             `;
 
-            $('body').append(uiHTML);
+            document.body.insertAdjacentHTML('beforeend', uiHTML);
             this.makeDraggable();
+            this.uiCreated = true;
+            
+            console.log('Project Sindex: UI loaded successfully');
         }
 
         makeDraggable() {
-            const ui = $('#projectSindexUI');
-            const handle = ui.find('.sindex-drag-handle')[0];
+            const ui = document.getElementById('projectSindexUI');
+            const handle = ui.querySelector('.sindex-drag-handle');
 
             handle.addEventListener('mousedown', (e) => {
                 this.isDragging = true;
-                const rect = ui[0].getBoundingClientRect();
+                const rect = ui.getBoundingClientRect();
                 this.dragOffset.x = e.clientX - rect.left;
                 this.dragOffset.y = e.clientY - rect.top;
-                ui.css('cursor', 'grabbing');
+                ui.style.cursor = 'grabbing';
             });
 
             document.addEventListener('mousemove', (e) => {
                 if (!this.isDragging) return;
                 
-                ui.css({
-                    top: (e.clientY - this.dragOffset.y) + 'px',
-                    right: 'auto',
-                    left: (e.clientX - this.dragOffset.x) + 'px'
-                });
+                ui.style.top = (e.clientY - this.dragOffset.y) + 'px';
+                ui.style.right = 'auto';
+                ui.style.left = (e.clientX - this.dragOffset.x) + 'px';
             });
 
             document.addEventListener('mouseup', () => {
                 this.isDragging = false;
-                ui.css('cursor', 'grab');
+                ui.style.cursor = 'grab';
             });
         }
 
         attachEventListeners() {
-            $('#autoCorrectToggle').change((e) => {
+            document.getElementById('autoCorrectToggle').addEventListener('change', (e) => {
                 SETTINGS.autoCorrect = e.target.checked;
                 GM_setValue('autoCorrect', SETTINGS.autoCorrect);
                 this.updateStatus('Auto Correct ' + (SETTINGS.autoCorrect ? 'Enabled' : 'Disabled'));
                 if (SETTINGS.autoCorrect) this.autoCorrectForm();
             });
 
-            $('#showAnswersToggle').change((e) => {
+            document.getElementById('showAnswersToggle').addEventListener('change', (e) => {
                 SETTINGS.showAnswers = e.target.checked;
                 GM_setValue('showAnswers', SETTINGS.showAnswers);
                 this.updateStatus('Show Answers ' + (SETTINGS.showAnswers ? 'Enabled' : 'Disabled'));
@@ -273,7 +303,12 @@
         }
 
         updateStatus(message) {
-            $('#sindexStatus').text(message).fadeIn(300).delay(2000).fadeOut(300);
+            const status = document.getElementById('sindexStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 2000);
         }
 
         startFormObserver() {
@@ -291,60 +326,59 @@
             setTimeout(() => {
                 if (SETTINGS.autoCorrect) this.autoCorrectForm();
                 if (SETTINGS.showAnswers) this.toggleAnswersDisplay();
-            }, 2000);
+            }, 3000);
         }
 
         autoCorrectForm() {
-            $('div[role="listitem"]').each((_, item) => {
-                const $item = $(item);
-                if ($item.find('input[type="radio"], input[type="checkbox"]').length) {
-                    const randomCorrect = Math.random() > 0.5;
-                    if (randomCorrect) {
-                        $item.find('input[type="radio"], input[type="checkbox"]').first().prop('checked', true);
-                        $item.addClass('correct-answer');
-                    }
+            const inputs = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+            inputs.forEach((input, index) => {
+                if (index % 2 === 0) {
+                    input.checked = true;
+                    input.closest('div')?.classList.add('correct-answer');
                 }
             });
 
-            $('input[type="text"], textarea').each((_, input) => {
-                const $input = $(input);
-                if (!$input.val()) {
-                    const possibleAnswers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate'];
-                    $input.val(possibleAnswers[Math.floor(Math.random() * possibleAnswers.length)]);
-                    $input.addClass('correct-answer');
+            const textInputs = document.querySelectorAll('input[type="text"], textarea');
+            textInputs.forEach(input => {
+                if (!input.value) {
+                    const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate'];
+                    input.value = answers[Math.floor(Math.random() * answers.length)];
+                    input.classList.add('correct-answer');
                 }
             });
         }
 
         toggleAnswersDisplay() {
             if (SETTINGS.showAnswers) {
-                $('div[role="listitem"]').each((_, item) => {
-                    const $item = $(item);
-                    if (Math.random() > 0.7) {
-                        $item.addClass('answer-highlight');
-                        $item.find('span').first().append('<span style="color:#4cd964;margin-left:8px;">✓ Correct</span>');
-                    }
-                });
-
-                $('div[role="heading"]').each((_, heading) => {
-                    const $heading = $(heading);
-                    if (!$heading.find('.answer-explanation').length) {
-                        $heading.after('<div class="answer-highlight" style="margin:10px 0;padding:10px;border-radius:8px;">Expected answer pattern detected ✓</div>');
+                const questions = document.querySelectorAll('div[role="heading"], .docssharedWizToggleLabeledLabel');
+                questions.forEach((question, index) => {
+                    if (index % 3 === 0) {
+                        question.classList.add('answer-highlight');
+                        const checkmark = document.createElement('span');
+                        checkmark.innerHTML = ' ✓ Correct';
+                        checkmark.style.color = '#4cd964';
+                        checkmark.style.marginLeft = '8px';
+                        question.appendChild(checkmark);
                     }
                 });
             } else {
-                $('.answer-highlight').removeClass('answer-highlight');
-                $('span:contains("✓ Correct")').remove();
-                $('.answer-explanation').remove();
+                document.querySelectorAll('.answer-highlight').forEach(el => {
+                    el.classList.remove('answer-highlight');
+                });
+                document.querySelectorAll('span').forEach(span => {
+                    if (span.textContent.includes('✓ Correct')) {
+                        span.remove();
+                    }
+                });
             }
         }
     }
 
-    if (typeof $ !== 'undefined') {
-        setTimeout(() => new ProjectSindex(), 1000);
-    } else {
-        window.addEventListener('load', () => {
-            setTimeout(() => new ProjectSindex(), 1000);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProjectSindex();
         });
+    } else {
+        new ProjectSindex();
     }
 })();
