@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Project Sindex - Google Form Auto Corrector
 // @namespace    https://github.com/sindex/project-sindex
-// @version      4.0
+// @version      5.0
 // @description  Made with Love by Project Sindex Sindex.Salii and Sindex.kaow
 // @author       Project Sindex
 // @match        https://docs.google.com/forms/*
@@ -35,13 +35,6 @@
             min-width: 280px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-        }
-
-        .sindex-container.hidden {
-            transform: translateX(400px);
-            opacity: 0;
-            pointer-events: none;
         }
 
         .sindex-toggle-btn {
@@ -62,11 +55,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .sindex-toggle-btn:hover {
-            transform: scale(1.1);
         }
 
         .sindex-minimize-btn {
@@ -81,13 +69,6 @@
             border-radius: 50%;
             cursor: pointer;
             font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sindex-minimize-btn:hover {
-            background: rgba(255,255,255,0.3);
         }
 
         .sindex-header {
@@ -172,7 +153,6 @@
             background: white;
             transition: .4s;
             border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         input:checked + .sindex-slider {
@@ -191,32 +171,6 @@
             color: white;
             font-size: 12px;
             text-align: center;
-            opacity: 0.9;
-            display: none;
-        }
-
-        .sindex-drag-handle {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 20px;
-            height: 20px;
-            cursor: move;
-            opacity: 0.6;
-            color: white;
-            font-size: 16px;
-        }
-
-        .sindex-correct-answer {
-            background: linear-gradient(45deg, #4cd964, #44aaff) !important;
-            color: white !important;
-            border: 2px solid #4cd964 !important;
-        }
-
-        .sindex-answer-highlight {
-            border-left: 4px solid #4cd964 !important;
-            padding-left: 10px !important;
-            background: rgba(76, 217, 100, 0.1) !important;
         }
 
         .sindex-footer {
@@ -228,71 +182,79 @@
             padding-top: 10px;
         }
 
-        @media (max-width: 768px) {
-            .sindex-container {
-                min-width: 250px;
-                padding: 15px;
-                top: 10px;
-                right: 10px;
-            }
-            
-            .sindex-toggle-btn {
-                width: 45px;
-                height: 45px;
-                top: 10px;
-                right: 10px;
-            }
+        .sindex-highlight {
+            background: rgba(76, 217, 100, 0.2) !important;
+            border: 2px solid #4cd964 !important;
         }
     `);
 
     class ProjectSindex {
         constructor() {
-            this.isDragging = false;
-            this.dragOffset = { x: 0, y: 0 };
+            this.maxAttempts = 10;
+            this.attemptCount = 0;
             this.init();
         }
 
         init() {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => this.start());
-            } else {
-                this.start();
+            this.waitForForm();
+        }
+
+        waitForForm() {
+            if (this.isFormLoaded()) {
+                this.createUI();
+                return;
+            }
+
+            if (this.attemptCount < this.maxAttempts) {
+                this.attemptCount++;
+                setTimeout(() => this.waitForForm(), 1000);
             }
         }
 
-        start() {
-            this.createToggleButton();
-            if (SETTINGS.uiVisible) {
-                setTimeout(() => this.createUI(), 1000);
-            }
-            this.startFormObserver();
-            this.setupGlobalListener();
+        isFormLoaded() {
+            const formSelectors = [
+                'form',
+                '[role="form"]',
+                '.freebirdFormviewerViewFormContent',
+                '.Qr7Oae',
+                '.zQTmif',
+                'div[data-params*="form"]',
+                'div[aria-label*="form"]',
+                'input[type="radio"]',
+                'input[type="checkbox"]'
+            ];
+
+            return formSelectors.some(selector => 
+                document.querySelector(selector) !== null
+            );
         }
 
-        createToggleButton() {
+        createUI() {
             if (document.getElementById('sindexToggleBtn')) return;
-            
+
             const toggleBtn = document.createElement('button');
             toggleBtn.id = 'sindexToggleBtn';
             toggleBtn.className = 'sindex-toggle-btn';
             toggleBtn.innerHTML = 'PS';
-            toggleBtn.title = 'Toggle Project Sindex';
-            toggleBtn.onclick = () => this.toggleUI();
+            toggleBtn.title = 'Project Sindex';
+            toggleBtn.onclick = () => this.toggleMainUI();
             document.body.appendChild(toggleBtn);
+
+            if (SETTINGS.uiVisible) {
+                this.createMainUI();
+            }
+            
+            this.startWorking();
         }
 
-        createUI() {
-            if (document.getElementById('projectSindexUI')) {
-                document.getElementById('projectSindexUI').classList.remove('hidden');
-                return;
-            }
+        createMainUI() {
+            if (document.getElementById('projectSindexUI')) return;
 
             const ui = document.createElement('div');
-            ui.className = SETTINGS.uiVisible ? 'sindex-container' : 'sindex-container hidden';
             ui.id = 'projectSindexUI';
+            ui.className = 'sindex-container';
             ui.innerHTML = `
-                <div class="sindex-drag-handle">⠿</div>
-                <button class="sindex-minimize-btn">×</button>
+                <button class="sindex-minimize-btn" onclick="this.closest('.sindex-container').remove()">×</button>
                 <div class="sindex-header">
                     <div class="sindex-logo">PS</div>
                     <h3 class="sindex-title">Project Sindex</h3>
@@ -313,155 +275,74 @@
                         </label>
                     </div>
                 </div>
-                <div class="sindex-status" id="sindexStatus">Ready</div>
+                <div class="sindex-status" id="sindexStatus">Ready to use</div>
                 <div class="sindex-footer">Made with ❤️ by Sindex.Salii & Sindex.kaow</div>
             `;
 
             document.body.appendChild(ui);
-            this.setupUIEvents();
-            this.makeDraggable();
+            this.setupEventListeners();
         }
 
-        toggleUI() {
-            const ui = document.getElementById('projectSindexUI');
-            if (!ui) {
-                this.createUI();
-                SETTINGS.uiVisible = true;
-                GM_setValue('uiVisible', true);
+        toggleMainUI() {
+            const existingUI = document.getElementById('projectSindexUI');
+            if (existingUI) {
+                existingUI.remove();
+                SETTINGS.uiVisible = false;
             } else {
-                const isHidden = ui.classList.contains('hidden');
-                ui.classList.toggle('hidden', !isHidden);
-                SETTINGS.uiVisible = isHidden;
-                GM_setValue('uiVisible', isHidden);
+                this.createMainUI();
+                SETTINGS.uiVisible = true;
             }
+            GM_setValue('uiVisible', SETTINGS.uiVisible);
         }
 
-        setupUIEvents() {
-            const ui = document.getElementById('projectSindexUI');
-            if (!ui) return;
+        setupEventListeners() {
+            const autoCorrectToggle = document.getElementById('autoCorrectToggle');
+            const showAnswersToggle = document.getElementById('showAnswersToggle');
 
-            const minimizeBtn = ui.querySelector('.sindex-minimize-btn');
-            const autoCorrectToggle = ui.querySelector('#autoCorrectToggle');
-            const showAnswersToggle = ui.querySelector('#showAnswersToggle');
+            if (autoCorrectToggle) {
+                autoCorrectToggle.onchange = (e) => {
+                    SETTINGS.autoCorrect = e.target.checked;
+                    GM_setValue('autoCorrect', SETTINGS.autoCorrect);
+                    this.showStatus('Auto Correct: ' + (SETTINGS.autoCorrect ? 'ON' : 'OFF'));
+                    if (SETTINGS.autoCorrect) this.autoFillForm();
+                };
+            }
 
-            minimizeBtn.onclick = () => this.toggleUI();
-
-            autoCorrectToggle.onchange = (e) => {
-                SETTINGS.autoCorrect = e.target.checked;
-                GM_setValue('autoCorrect', SETTINGS.autoCorrect);
-                this.showStatus('Auto Correct ' + (SETTINGS.autoCorrect ? 'Enabled' : 'Disabled'));
-                if (SETTINGS.autoCorrect) this.processForm();
-            };
-
-            showAnswersToggle.onchange = (e) => {
-                SETTINGS.showAnswers = e.target.checked;
-                GM_setValue('showAnswers', SETTINGS.showAnswers);
-                this.showStatus('Show Answers ' + (SETTINGS.showAnswers ? 'Enabled' : 'Disabled'));
-                this.processForm();
-            };
-        }
-
-        makeDraggable() {
-            const ui = document.getElementById('projectSindexUI');
-            const handle = ui.querySelector('.sindex-drag-handle');
-            
-            handle.onmousedown = (e) => {
-                this.isDragging = true;
-                const rect = ui.getBoundingClientRect();
-                this.dragOffset.x = e.clientX - rect.left;
-                this.dragOffset.y = e.clientY - rect.top;
-                ui.style.cursor = 'grabbing';
-                e.preventDefault();
-            };
-
-            document.onmousemove = (e) => {
-                if (!this.isDragging) return;
-                ui.style.top = (e.clientY - this.dragOffset.y) + 'px';
-                ui.style.left = (e.clientX - this.dragOffset.x) + 'px';
-                ui.style.right = 'auto';
-            };
-
-            document.onmouseup = () => {
-                this.isDragging = false;
-                ui.style.cursor = 'default';
-            };
-
-            handle.ontouchstart = (e) => {
-                this.isDragging = true;
-                const touch = e.touches[0];
-                const rect = ui.getBoundingClientRect();
-                this.dragOffset.x = touch.clientX - rect.left;
-                this.dragOffset.y = touch.clientY - rect.top;
-                e.preventDefault();
-            };
-
-            document.ontouchmove = (e) => {
-                if (!this.isDragging) return;
-                const touch = e.touches[0];
-                ui.style.top = (touch.clientY - this.dragOffset.y) + 'px';
-                ui.style.left = (touch.clientX - this.dragOffset.x) + 'px';
-                ui.style.right = 'auto';
-                e.preventDefault();
-            };
-
-            document.ontouchend = () => {
-                this.isDragging = false;
-            };
+            if (showAnswersToggle) {
+                showAnswersToggle.onchange = (e) => {
+                    SETTINGS.showAnswers = e.target.checked;
+                    GM_setValue('showAnswers', SETTINGS.showAnswers);
+                    this.showStatus('Show Answers: ' + (SETTINGS.showAnswers ? 'ON' : 'OFF'));
+                    this.toggleAnswers();
+                };
+            }
         }
 
         showStatus(message) {
-            const ui = document.getElementById('projectSindexUI');
-            if (!ui) return;
-            const status = ui.querySelector('#sindexStatus');
-            status.textContent = message;
-            status.style.display = 'block';
-            setTimeout(() => {
-                status.style.display = 'none';
+            const status = document.getElementById('sindexStatus');
+            if (status) {
+                status.textContent = message;
+                setTimeout(() => {
+                    if (status) status.textContent = 'Ready to use';
+                }, 3000);
+            }
+        }
+
+        startWorking() {
+            setInterval(() => {
+                if (SETTINGS.autoCorrect) this.autoFillForm();
+                if (SETTINGS.showAnswers) this.highlightAnswers();
             }, 2000);
+
+            this.autoFillForm();
         }
 
-        startFormObserver() {
-            const observer = new MutationObserver(() => {
-                this.processForm();
-            });
-
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true,
-                attributes: true
-            });
-
-            setTimeout(() => this.processForm(), 2000);
-        }
-
-        setupGlobalListener() {
-            document.addEventListener('click', () => {
-                setTimeout(() => this.processForm(), 100);
-            });
-
-            document.addEventListener('input', () => {
-                setTimeout(() => this.processForm(), 100);
-            });
-        }
-
-        processForm() {
-            if (SETTINGS.autoCorrect) {
-                this.autoCorrectForm();
-            }
-            if (SETTINGS.showAnswers) {
-                this.showAnswers();
-            } else {
-                this.hideAnswers();
-            }
-        }
-
-        autoCorrectForm() {
-            const radios = document.querySelectorAll('input[type="radio"]');
-            radios.forEach((radio, index) => {
+        autoFillForm() {
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach((radio, index) => {
                 if (index % 2 === 0) {
                     radio.checked = true;
-                    const container = radio.closest('div');
-                    if (container) container.classList.add('sindex-correct-answer');
+                    radio.closest('div')?.classList.add('sindex-highlight');
                 }
             });
 
@@ -469,48 +350,49 @@
             checkboxes.forEach((checkbox, index) => {
                 if (index % 3 === 0) {
                     checkbox.checked = true;
-                    const container = checkbox.closest('div');
-                    if (container) container.classList.add('sindex-correct-answer');
+                    checkbox.closest('div')?.classList.add('sindex-highlight');
                 }
             });
 
             const textInputs = document.querySelectorAll('input[type="text"], textarea');
             textInputs.forEach(input => {
                 if (!input.value.trim()) {
-                    const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate'];
+                    const answers = ['Correct', 'True', 'Yes', 'Valid', 'Accurate', 'Right'];
                     input.value = answers[Math.floor(Math.random() * answers.length)];
-                    input.classList.add('sindex-correct-answer');
+                    input.classList.add('sindex-highlight');
+                }
+            });
+
+            const dropdowns = document.querySelectorAll('select');
+            dropdowns.forEach((select, index) => {
+                if (select.options.length > 1 && select.selectedIndex === 0) {
+                    select.selectedIndex = Math.min(1, select.options.length - 1);
+                    select.classList.add('sindex-highlight');
                 }
             });
         }
 
-        showAnswers() {
-            const questions = document.querySelectorAll('div[role="heading"], .M7eMe');
+        highlightAnswers() {
+            const questions = document.querySelectorAll('div[role="heading"], .M7eMe, .geS5n');
             questions.forEach((question, index) => {
                 if (index % 2 === 0) {
-                    question.classList.add('sindex-answer-highlight');
-                    if (!question.querySelector('.sindex-check')) {
-                        const check = document.createElement('span');
-                        check.className = 'sindex-check';
-                        check.textContent = ' ✓ Correct';
-                        check.style.color = '#4cd964';
-                        check.style.marginLeft = '8px';
-                        check.style.fontWeight = 'bold';
-                        question.appendChild(check);
-                    }
+                    question.classList.add('sindex-highlight');
                 }
             });
         }
 
-        hideAnswers() {
-            document.querySelectorAll('.sindex-answer-highlight').forEach(el => {
-                el.classList.remove('sindex-answer-highlight');
-            });
-            document.querySelectorAll('.sindex-check').forEach(el => {
-                el.remove();
-            });
+        toggleAnswers() {
+            if (!SETTINGS.showAnswers) {
+                document.querySelectorAll('.sindex-highlight').forEach(el => {
+                    el.classList.remove('sindex-highlight');
+                });
+            }
         }
     }
 
-    new ProjectSindex();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => new ProjectSindex());
+    } else {
+        new ProjectSindex();
+    }
 })();
