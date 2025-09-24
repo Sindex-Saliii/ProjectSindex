@@ -1576,18 +1576,21 @@ spawn(function()
                 CheckLevel()
                 if not string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) or game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false then
                     game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-                        Tween(CFrameQ)
+                    Tween(CFrameQ)
                     if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 5 then
                         task.wait(1)
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
                     end
 
-                elseif string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) or game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == true then
+                elseif string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) and game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == true then
+                    local enemyFound = false
+                    
                     if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
                         for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
                             if v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") and v.Humanoid.Health > 0 then
                                 if v.Name == Ms then
-                                    repeat game:GetService("RunService").Heartbeat:wait()
+                                    enemyFound = true
+                                    repeat task.wait()
                                         EquipTool(SelectWeapon)
                                         Tween(v.HumanoidRootPart.CFrame * RandomPOS)
                                         v.HumanoidRootPart.CanCollide = false
@@ -1600,7 +1603,8 @@ spawn(function()
                                 end
                             end
                         end
-                    else
+                    end
+                    if not enemyFound then
                         Tween(CFrameMon)
                     end
                 end
