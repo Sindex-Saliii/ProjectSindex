@@ -1910,6 +1910,8 @@ task.spawn(function()
 end)
 wait()
 
+local env = getgenv()
+
 local b1mob = Tabs.setfarm:AddToggle("Bring Mob", {Title = "Bring Mob", Default = true })
 
 b1mob:OnChanged(function(Value)
@@ -1921,8 +1923,6 @@ local bttp = Tabs.setfarm:AddToggle("btp", {Title = "Bypass Teleport", Default =
 bttp:OnChanged(function(Value)
     ByPassTP = Value
 end)
-env.fastattack = true
-env.freezeenemies = true
 local fastt = Tabs.setfarm:AddToggle("btp", {Title = "Fast Attack", Default = true })
 
 fastt:OnChanged(function(Value)
