@@ -1663,7 +1663,7 @@ Tabs.Mains:Toggle({
     Image = 'toggle-right',
     Value = false,
     Callback = function(v)
-        Env.AutoSecondSea = v
+        Env.AutoThirdSea = v
     end,
 })
 
