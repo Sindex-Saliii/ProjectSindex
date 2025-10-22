@@ -1,816 +1,287 @@
-warn("Loading trigon beta v2.0.3f...")
+
+	local assets = {
+		"rbxassetid://13846942895",
+		"rbxassetid://13857927803",
+		"rbxassetid://14935665568",
+		"rbxassetid://18977471959",
+		"rbxasset://fonts/families/GothamSSm.json",
+		"http://www.roblox.com/asset/?id=7279137093",
+		"rbxassetid://13846733049",
+		"rbxassetid://4370336704",
+		"rbxassetid://13858831405",
+		"rbxassetid://13846730754",
+		"rbxassetid://14906108417",
+		"rbxassetid://14897613248",
+		"rbxassetid://14906044812",
+		"rbxassetid://13858598136",
+		"rbxassetid://14943478323",
+		"rbxasset://fonts/families/Ubuntu.json",
+		"rbxassetid://13863565650",
+		"rbxassetid://13858807130",
+		"rbxassetid://14899303520",
+		"rbxassetid://14915625587",
+		"rbxassetid://15083397259",
+		"rbxassetid://13864075732",
+		"rbxassetid://13858536425",
+		"rbxassetid://13858586468",
+		"rbxassetid://13868180009",
+		"rbxasset://fonts/families/Inconsolata.json",
+		"rbxassetid://13868208836",
+		"rbxassetid://14897695456",
+		"rbxassetid://14897395112",
+		"rbxassetid://13868245052",
+		"rbxassetid://13858870213",
+		"rbxassetid://14906027134",
+		"rbxassetid://14943471814",
+		"rbxassetid://18977722781",
+		"rbxasset://fonts/families/Roboto.json",
+		"rbxassetid://14899300122",
+		"rbxassetid://13857725039",
+		"rbxassetid://13868123848",
+		"rbxassetid://13850263673",
+		"http://www.roblox.com/asset/?id=5004759484",
+		"rbxasset://fonts/families/SourceSansPro.json",
+		"rbxassetid://14943812610",
+		"rbxassetid://14939270108",
+		"rbxassetid://14943006926",
+		"rbxassetid://14897343042",
+		"rbxassetid://14906357941",
+		"rbxassetid://14937784864",
+		"rbxassetid://18352196452",
+		"rbxassetid://13864006364",
+		"rbxassetid://12187365364",
+	}
+
+	if type(arceus) == "table" and type(arceus.EOWOWQPQPPALSKSNX) == "function" then
+		pcall(arceus.EOWOWQPQPPALSKSNX, assets)
+	end
+
+	local ScreenGui = Instance.new("ScreenGui")
+	local Main = Instance.new("Frame")
+	local Header = Instance.new("Frame")
+	local Title = Instance.new("TextLabel")
+	local CloseBtn = Instance.new("TextButton")
+	local Sidebar = Instance.new("Frame")
+	local Buttons = Instance.new("UIListLayout")
+	local HomeBtn = Instance.new("TextButton")
+	local ConsoleBtn = Instance.new("TextButton")
+	local Editor = Instance.new("Frame")
+	local CodeBox = Instance.new("TextBox")
+	local Execute = Instance.new("TextButton")
+	local Output = Instance.new("TextBox")
+	local UICornerMain = Instance.new("UICorner")
+	local UICornerBtn = Instance.new("UICorner")
+	local TweenService = game:GetService("TweenService")
+	local UserInputService = game:GetService("UserInputService")
+
+	ScreenGui.Name = "Trigon"
+	ScreenGui.IgnoreGuiInset = true
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.Parent = gethui()
+
+	Main.Name = "Main"
+	Main.AnchorPoint = Vector2.new(0.5,0.5)
+	Main.Position = UDim2.new(0.5,0,0.5,0)
+	Main.Size = UDim2.new(0.78,0,0.78,0)
+	Main.BackgroundColor3 = Color3.fromRGB(24,25,27)
+	Main.BorderSizePixel = 0
+	Main.Parent = ScreenGui
+
+	UICornerMain.CornerRadius = UDim.new(0,12)
+	UICornerMain.Parent = Main
+
+	Header.Name = "Header"
+	Header.Size = UDim2.new(1,0,0.08,0)
+	Header.BackgroundTransparency = 1
+	Header.Parent = Main
+
+	Title.Name = "Title"
+	Title.Text = "Trigon"
+	Title.Font = Enum.Font.GothamSemibold
+	Title.TextSize = 20
+	Title.TextColor3 = Color3.fromRGB(245,245,245)
+	Title.BackgroundTransparency = 1
+	Title.Position = UDim2.new(0.03,0,0,0)
+	Title.Size = UDim2.new(0.4,0,1,0)
+	Title.Parent = Header
+
+	CloseBtn.Name = "CloseBtn"
+	CloseBtn.Text = "✕"
+	CloseBtn.Font = Enum.Font.Gotham
+	CloseBtn.TextSize = 18
+	CloseBtn.TextColor3 = Color3.fromRGB(170,170,170)
+	CloseBtn.BackgroundTransparency = 1
+	CloseBtn.Size = UDim2.new(0,36,0,24)
+	CloseBtn.Position = UDim2.new(0.95,-36,0.12,0)
+	CloseBtn.Parent = Header
+
+	Sidebar.Name = "Sidebar"
+	Sidebar.Size = UDim2.new(0.14,0,0.92,0)
+	Sidebar.Position = UDim2.new(0,0,0.08,0)
+	Sidebar.BackgroundColor3 = Color3.fromRGB(28,29,31)
+	Sidebar.BorderSizePixel = 0
+	Sidebar.Parent = Main
+
+	Buttons.FillDirection = Enum.FillDirection.Vertical
+	Buttons.SortOrder = Enum.SortOrder.LayoutOrder
+	Buttons.Padding = UDim.new(0,8)
+	Buttons.Parent = Sidebar
+
+	HomeBtn.Name = "HomeBtn"
+	HomeBtn.Text = "Home"
+	HomeBtn.Font = Enum.Font.Gotham
+	HomeBtn.TextSize = 16
+	HomeBtn.TextColor3 = Color3.fromRGB(230,230,230)
+	HomeBtn.BackgroundTransparency = 1
+	HomeBtn.Size = UDim2.new(1,0,0,40)
+	HomeBtn.Parent = Sidebar
+
+	ConsoleBtn.Name = "ConsoleBtn"
+	ConsoleBtn.Text = "Console"
+	ConsoleBtn.Font = Enum.Font.Gotham
+	ConsoleBtn.TextSize = 16
+	ConsoleBtn.TextColor3 = Color3.fromRGB(150,150,150)
+	ConsoleBtn.BackgroundTransparency = 1
+	ConsoleBtn.Size = UDim2.new(1,0,0,40)
+	ConsoleBtn.Parent = Sidebar
+
+	Editor.Name = "Editor"
+	Editor.BackgroundColor3 = Color3.fromRGB(20,21,22)
+	Editor.Size = UDim2.new(0.86,0,0.7,0)
+	Editor.Position = UDim2.new(0.14,0,0.08,0)
+	Editor.BorderSizePixel = 0
+	Editor.Parent = Main
+
+	CodeBox.Name = "CodeBox"
+	CodeBox.ClearTextOnFocus = false
+	CodeBox.Text = ""
+	CodeBox.Font = Enum.Font.Code
+	CodeBox.TextSize = 14
+	CodeBox.TextColor3 = Color3.fromRGB(235,235,235)
+	CodeBox.BackgroundColor3 = Color3.fromRGB(16,17,18)
+	CodeBox.Size = UDim2.new(1,-128,0.72,0)
+	CodeBox.Position = UDim2.new(0,16,0,16)
+	CodeBox.TextXAlignment = Enum.TextXAlignment.Left
+	CodeBox.TextYAlignment = Enum.TextYAlignment.Top
+	CodeBox.TextWrapped = false
+	CodeBox.MultiLine = true
+	CodeBox.ClearTextOnFocus = false
+	CodeBox.Parent = Editor
+
+	Execute.Name = "Execute"
+	Execute.Text = "Run"
+	Execute.Font = Enum.Font.GothamBold
+	Execute.TextSize = 14
+	Execute.TextColor3 = Color3.fromRGB(255,255,255)
+	Execute.BackgroundColor3 = Color3.fromRGB(66,133,244)
+	Execute.Position = UDim2.new(1,-104,0.74,16)
+	Execute.Size = UDim2.new(0,88,0,36)
+	Execute.Parent = Editor
+
+	UICornerBtn.CornerRadius = UDim.new(0,8)
+	UICornerBtn.Parent = Execute
+
+	Output.Name = "Output"
+	Output.Text = ""
+	Output.Font = Enum.Font.Code
+	Output.TextSize = 13
+	Output.TextColor3 = Color3.fromRGB(220,220,220)
+	Output.BackgroundColor3 = Color3.fromRGB(12,13,14)
+	Output.Size = UDim2.new(1,-32,0.22, -24)
+	Output.Position = UDim2.new(0,16,0.78,12)
+	Output.ClearTextOnFocus = false
+	Output.MultiLine = true
+	Output.TextWrapped = true
+	Output.TextYAlignment = Enum.TextYAlignment.Top
+	Output.ReadOnly = true
+	Output.Parent = Editor
+
+	local function appendOutput(...)
+		local parts = {}
+		for i = 1, select('#', ...) do
+			local v = select(i, ...)
+			table.insert(parts, tostring(v))
+		end
+		local line = table.concat(parts, "\t")
+		if Output.Text ~= "" then
+			Output.Text = Output.Text .. "\n" .. line
+		else
+			Output.Text = line
+		end
+	end
+
+	local function safeRun()
+		Output.Text = ""
+		local origPrint = print
+		print = function(...)
+			appendOutput(...)
+			origPrint(...)
+		end
+		local chunk, loadErr = loadstring(CodeBox.Text)
+		if not chunk then
+			appendOutput(loadErr)
+			print = origPrint
+			return
+		end
+		local ok, err = pcall(chunk)
+		if not ok and err then
+			appendOutput(err)
+		end
+		print = origPrint
+	end
+
+	Execute.MouseButton1Click:Connect(safeRun)
+
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if gameProcessed then return end
+		if input.KeyCode == Enum.KeyCode.Return then
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+				safeRun()
+			end
+		elseif input.KeyCode == Enum.KeyCode.K then
+			if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+				CodeBox:CaptureFocus()
+			end
+		end
+	end)
+
+	local function setHover(button, on)
+		if on then
+			button.TextColor3 = Color3.fromRGB(240,240,240)
+		else
+			if button == ConsoleBtn then
+				button.TextColor3 = Color3.fromRGB(150,150,150)
+			else
+				button.TextColor3 = Color3.fromRGB(230,230,230)
+			end
+		end
+	end
+
+	HomeBtn.MouseEnter:Connect(function() setHover(HomeBtn, true) end)
+	HomeBtn.MouseLeave:Connect(function() setHover(HomeBtn, false) end)
+	ConsoleBtn.MouseEnter:Connect(function() setHover(ConsoleBtn, true) end)
+	ConsoleBtn.MouseLeave:Connect(function() setHover(ConsoleBtn, false) end)
+
+	CloseBtn.MouseButton1Click:Connect(function()
+		ScreenGui:Destroy()
+	end)
+
+	local editorVisible = true
+	local function showEditor(show)
+		editorVisible = show
+		local goal = {Size = show and UDim2.new(0.86,0,0.7,0) or UDim2.new(0.86,0,0.92,0), Position = UDim2.new(0.14,0,0.08,0)}
+		TweenService:Create(Editor, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal):Play()
+	end
+
+	HomeBtn.MouseButton1Click:Connect(function()
+		showEditor(true)
+	end)
+
+	ConsoleBtn.MouseButton1Click:Connect(function()
+		showEditor(false)
+	end)
 
 
-arceus.EOWOWQPQPPALSKSNX({
-    "rbxassetid://13846942895",
-    "rbxassetid://13857927803",
-    "rbxassetid://14935665568",
-    "rbxassetid://18977471959",
-    "rbxasset://fonts/families/GothamSSm.json",
-    "http://www.roblox.com/asset/?id=7279137093",
-    "rbxassetid://13846733049",
-    "rbxassetid://4370336704",
-    "rbxassetid://13858831405",
-    "rbxassetid://13846730754",
-    "rbxassetid://14906108417",
-    "rbxassetid://14897613248",
-    "rbxassetid://14906044812",
-    "rbxassetid://13858598136",
-    "rbxassetid://94629608472312",
-    "rbxassetid://14943478323",
-    "rbxasset://fonts/families/Ubuntu.json",
-    "rbxassetid://13863565650",
-    "rbxassetid://13858807130",
-    "rbxassetid://14899303520",
-    "rbxassetid://14915625587",
-    "rbxassetid://15083397259",
-    "rbxassetid://13864075732",
-    "rbxassetid://13858536425",
-    "rbxassetid://13858586468",
-    "rbxassetid://82500352718600",
-    "rbxassetid://13868180009",
-    "rbxasset://fonts/families/Inconsolata.json",
-    "",
-    "rbxassetid://13868208836",
-    "rbxassetid://14897695456",
-    "rbxassetid://14897395112",
-    "rbxassetid://13868245052",
-    "rbxassetid://13858870213",
-    "rbxassetid://14906027134",
-    "rbxassetid://14943471814",
-    "rbxassetid://18977722781",
-    "rbxasset://fonts/families/LegacyArial.json",
-    "rbxasset://fonts/families/Roboto.json",
-    "rbxassetid://14899300122",
-    "rbxassetid://13857725039",
-    "rbxassetid://13868123848",
-    "rbxassetid://80411943564388",
-    "rbxassetid://13850263673",
-    "http://www.roblox.com/asset/?id=5004759484",
-    "rbxasset://fonts/families/SourceSansPro.json",
-    "rbxassetid://14943812610",
-    "rbxassetid://14939270108",
-    "rbxassetid://14943006926",
-    "rbxassetid://14897343042",
-    "rbxassetid://14906357941",
-    "rbxassetid://14937784864",
-    "rbxasset://fonts/Arimo-Regular.ttf",
-    "rbxassetid://18352196452",
-    "rbxassetid://13864006364",
-    "rbxassetid://12187365364",
-})
-
-
-local _trigon =
-{
-	Trigon = Instance.new("ScreenGui"),
-	Canvas = Instance.new("Frame"),
-	Container = Instance.new("Frame"),
-	Main = Instance.new("Frame"),
-	TopInfo = Instance.new("Frame"),
-	TextLabel = Instance.new("TextLabel"),
-	UIPadding = Instance.new("UIPadding"),
-	TextLabel_1 = Instance.new("TextLabel"),
-	UIPadding_1 = Instance.new("UIPadding"),
-	UIAspectRatioConstraint = Instance.new("UIAspectRatioConstraint"),
-	Avatar = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_1 = Instance.new("UIAspectRatioConstraint"),
-	UIStroke = Instance.new("UIStroke"),
-	UICorner = Instance.new("UICorner"),
-	Nav = Instance.new("Frame"),
-	UIListLayout = Instance.new("UIListLayout"),
-	Home = Instance.new("ImageButton"),
-	Main_1 = Instance.new("Frame"),
-	Icon = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_2 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_2 = Instance.new("TextLabel"),
-	UIPadding_2 = Instance.new("UIPadding"),
-	UIGradient = Instance.new("UIGradient"),
-	Console = Instance.new("ImageButton"),
-	Main_2 = Instance.new("Frame"),
-	Icon_1 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_3 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_3 = Instance.new("TextLabel"),
-	UIPadding_3 = Instance.new("UIPadding"),
-	UIGradient_1 = Instance.new("UIGradient"),
-	Editor = Instance.new("ImageButton"),
-	Main_3 = Instance.new("Frame"),
-	Icon_2 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_4 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_4 = Instance.new("TextLabel"),
-	UIPadding_4 = Instance.new("UIPadding"),
-	UIGradient_2 = Instance.new("UIGradient"),
-	Scripts = Instance.new("ImageButton"),
-	Main_4 = Instance.new("Frame"),
-	Icon_3 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_5 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_5 = Instance.new("TextLabel"),
-	UIPadding_5 = Instance.new("UIPadding"),
-	UIGradient_3 = Instance.new("UIGradient"),
-	Github = Instance.new("ImageButton"),
-	Main_5 = Instance.new("Frame"),
-	Icon_4 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_6 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_6 = Instance.new("TextLabel"),
-	UIPadding_6 = Instance.new("UIPadding"),
-	UIGradient_4 = Instance.new("UIGradient"),
-	FileManager = Instance.new("ImageButton"),
-	Main_6 = Instance.new("Frame"),
-	Icon_5 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_7 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_7 = Instance.new("TextLabel"),
-	UIPadding_7 = Instance.new("UIPadding"),
-	UIGradient_5 = Instance.new("UIGradient"),
-	Tabs = Instance.new("Folder"),
-	Editor_1 = Instance.new("Frame"),
-	UICorner_1 = Instance.new("UICorner"),
-	UIStroke_1 = Instance.new("UIStroke"),
-	UIGradient_6 = Instance.new("UIGradient"),
-	bottom = Instance.new("Frame"),
-	UIListLayout_1 = Instance.new("UIListLayout"),
-	exec = Instance.new("ImageButton"),
-	UICorner_2 = Instance.new("UICorner"),
-	Main_7 = Instance.new("Frame"),
-	UIPadding_8 = Instance.new("UIPadding"),
-	UIListLayout_2 = Instance.new("UIListLayout"),
-	Icon_6 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_8 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_8 = Instance.new("TextLabel"),
-	UIPadding_9 = Instance.new("UIPadding"),
-	execClipboard = Instance.new("ImageButton"),
-	UICorner_3 = Instance.new("UICorner"),
-	Main_8 = Instance.new("Frame"),
-	UIPadding_10 = Instance.new("UIPadding"),
-	UIListLayout_3 = Instance.new("UIListLayout"),
-	Icon_7 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_9 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_9 = Instance.new("TextLabel"),
-	UIPadding_11 = Instance.new("UIPadding"),
-	Paste = Instance.new("ImageButton"),
-	UICorner_4 = Instance.new("UICorner"),
-	Main_9 = Instance.new("Frame"),
-	UIPadding_12 = Instance.new("UIPadding"),
-	UIListLayout_4 = Instance.new("UIListLayout"),
-	Icon_8 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_10 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_10 = Instance.new("TextLabel"),
-	UIPadding_13 = Instance.new("UIPadding"),
-	Clear = Instance.new("ImageButton"),
-	UICorner_5 = Instance.new("UICorner"),
-	Main_10 = Instance.new("Frame"),
-	UIPadding_14 = Instance.new("UIPadding"),
-	UIListLayout_5 = Instance.new("UIListLayout"),
-	Icon_9 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_11 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_11 = Instance.new("TextLabel"),
-	UIPadding_15 = Instance.new("UIPadding"),
-	addNewLine = Instance.new("ImageButton"),
-	UICorner_6 = Instance.new("UICorner"),
-	Main_11 = Instance.new("Frame"),
-	UIPadding_16 = Instance.new("UIPadding"),
-	UIListLayout_6 = Instance.new("UIListLayout"),
-	Icon_10 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_12 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_12 = Instance.new("TextLabel"),
-	UIPadding_17 = Instance.new("UIPadding"),
-	Top = Instance.new("ScrollingFrame"),
-	tab_name = Instance.new("ImageButton"),
-	UICorner_7 = Instance.new("UICorner"),
-	Main_12 = Instance.new("Frame"),
-	UIPadding_18 = Instance.new("UIPadding"),
-	UIListLayout_7 = Instance.new("UIListLayout"),
-	Icon_11 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_13 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_13 = Instance.new("TextLabel"),
-	UIPadding_19 = Instance.new("UIPadding"),
-	UIListLayout_8 = Instance.new("UIListLayout"),
-	ScriptTabs = Instance.new("Folder"),
-	Container_1 = Instance.new("Frame"),
-	tab_frame = Instance.new("Frame"),
-	UICorner_8 = Instance.new("UICorner"),
-	list = Instance.new("Frame"),
-	UICorner_9 = Instance.new("UICorner"),
-	TextLabel_14 = Instance.new("TextLabel"),
-	UICorner_10 = Instance.new("UICorner"),
-	add = Instance.new("TextButton"),
-	UICorner_11 = Instance.new("UICorner"),
-	btn = Instance.new("ImageLabel"),
-	Home_1 = Instance.new("Frame"),
-	UICorner_12 = Instance.new("UICorner"),
-	UIStroke_2 = Instance.new("UIStroke"),
-	userinfo = Instance.new("Frame"),
-	UICorner_13 = Instance.new("UICorner"),
-	UIStroke_3 = Instance.new("UIStroke"),
-	Role = Instance.new("TextLabel"),
-	Icon_12 = Instance.new("ImageLabel"),
-	UICorner_14 = Instance.new("UICorner"),
-	NoActions = Instance.new("TextLabel"),
-	DisplayName = Instance.new("TextButton"),
-	PlayerInteractions = Instance.new("Frame"),
-	UIListLayout_9 = Instance.new("UIListLayout"),
-	Avatar_1 = Instance.new("ImageLabel"),
-	UICorner_15 = Instance.new("UICorner"),
-	UIStroke_4 = Instance.new("UIStroke"),
-	UIAspectRatioConstraint_14 = Instance.new("UIAspectRatioConstraint"),
-	Progress = Instance.new("Frame"),
-	UICorner_16 = Instance.new("UICorner"),
-	Bar = Instance.new("Frame"),
-	UICorner_17 = Instance.new("UICorner"),
-	UIGradient_7 = Instance.new("UIGradient"),
-	Role_1 = Instance.new("TextLabel"),
-	Server = Instance.new("Frame"),
-	Title = Instance.new("TextLabel"),
-	UICorner_18 = Instance.new("UICorner"),
-	Players = Instance.new("Frame"),
-	Title_1 = Instance.new("TextLabel"),
-	Value = Instance.new("TextLabel"),
-	UICorner_19 = Instance.new("UICorner"),
-	Subtitle = Instance.new("TextLabel"),
-	MaxPlayers = Instance.new("Frame"),
-	Title_2 = Instance.new("TextLabel"),
-	Value_1 = Instance.new("TextLabel"),
-	UICorner_20 = Instance.new("UICorner"),
-	Latency = Instance.new("Frame"),
-	Title_3 = Instance.new("TextLabel"),
-	Value_2 = Instance.new("TextLabel"),
-	UICorner_21 = Instance.new("UICorner"),
-	Region = Instance.new("Frame"),
-	Title_4 = Instance.new("TextLabel"),
-	Value_3 = Instance.new("TextLabel"),
-	UICorner_22 = Instance.new("UICorner"),
-	Time = Instance.new("Frame"),
-	Title_5 = Instance.new("TextLabel"),
-	Value_4 = Instance.new("TextLabel"),
-	UICorner_23 = Instance.new("UICorner"),
-	UIStroke_5 = Instance.new("UIStroke"),
-	UIGradient_8 = Instance.new("UIGradient"),
-	JobId = Instance.new("ImageButton"),
-	Title_6 = Instance.new("TextLabel"),
-	Value_5 = Instance.new("TextLabel"),
-	UICorner_24 = Instance.new("UICorner"),
-	UIGradient_9 = Instance.new("UIGradient"),
-	rejoin = Instance.new("ImageButton"),
-	Title_7 = Instance.new("TextLabel"),
-	Value_6 = Instance.new("TextLabel"),
-	UICorner_25 = Instance.new("UICorner"),
-	Friends = Instance.new("Frame"),
-	Title_8 = Instance.new("TextLabel"),
-	UICorner_26 = Instance.new("UICorner"),
-	InGame = Instance.new("Frame"),
-	Title_9 = Instance.new("TextLabel"),
-	Value_7 = Instance.new("TextLabel"),
-	UICorner_27 = Instance.new("UICorner"),
-	Subtitle_1 = Instance.new("TextLabel"),
-	Offline = Instance.new("Frame"),
-	Title_10 = Instance.new("TextLabel"),
-	Value_8 = Instance.new("TextLabel"),
-	UICorner_28 = Instance.new("UICorner"),
-	Online = Instance.new("Frame"),
-	Title_11 = Instance.new("TextLabel"),
-	Value_9 = Instance.new("TextLabel"),
-	UICorner_29 = Instance.new("UICorner"),
-	All = Instance.new("Frame"),
-	Title_12 = Instance.new("TextLabel"),
-	Value_10 = Instance.new("TextLabel"),
-	UICorner_30 = Instance.new("UICorner"),
-	UIStroke_6 = Instance.new("UIStroke"),
-	UIGradient_10 = Instance.new("UIGradient"),
-	UIGradient_11 = Instance.new("UIGradient"),
-	UIGradient_12 = Instance.new("UIGradient"),
-	partneredFrame = Instance.new("Frame"),
-	Title_13 = Instance.new("TextLabel"),
-	UICorner_31 = Instance.new("UICorner"),
-	Subtitle_2 = Instance.new("TextLabel"),
-	UIStroke_7 = Instance.new("UIStroke"),
-	UIGradient_13 = Instance.new("UIGradient"),
-	UIGradient_14 = Instance.new("UIGradient"),
-	ScrollingFrame = Instance.new("ScrollingFrame"),
-	UIListLayout_10 = Instance.new("UIListLayout"),
-	UIPadding_20 = Instance.new("UIPadding"),
-	Template = Instance.new("Frame"),
-	UICorner_32 = Instance.new("UICorner"),
-	UIStroke_8 = Instance.new("UIStroke"),
-	subtext = Instance.new("TextLabel"),
-	logo = Instance.new("ImageLabel"),
-	UICorner_33 = Instance.new("UICorner"),
-	UIStroke_9 = Instance.new("UIStroke"),
-	UIAspectRatioConstraint_15 = Instance.new("UIAspectRatioConstraint"),
-	execBtn = Instance.new("ImageButton"),
-	UICorner_34 = Instance.new("UICorner"),
-	Icon_13 = Instance.new("ImageLabel"),
-	UIStroke_10 = Instance.new("UIStroke"),
-	UIAspectRatioConstraint_16 = Instance.new("UIAspectRatioConstraint"),
-	Title_14 = Instance.new("TextLabel"),
-	LocalScriptsFrame = Instance.new("Frame"),
-	Title_15 = Instance.new("TextLabel"),
-	UICorner_35 = Instance.new("UICorner"),
-	Subtitle_3 = Instance.new("TextLabel"),
-	UIStroke_11 = Instance.new("UIStroke"),
-	UIGradient_15 = Instance.new("UIGradient"),
-	ScrollingFrame_1 = Instance.new("ScrollingFrame"),
-	UIListLayout_11 = Instance.new("UIListLayout"),
-	UIPadding_21 = Instance.new("UIPadding"),
-	Template_1 = Instance.new("Frame"),
-	UICorner_36 = Instance.new("UICorner"),
-	UIStroke_12 = Instance.new("UIStroke"),
-	subtext_1 = Instance.new("TextLabel"),
-	logo_1 = Instance.new("ImageLabel"),
-	UICorner_37 = Instance.new("UICorner"),
-	UIStroke_13 = Instance.new("UIStroke"),
-	UIAspectRatioConstraint_17 = Instance.new("UIAspectRatioConstraint"),
-	execBtn_1 = Instance.new("ImageButton"),
-	UICorner_38 = Instance.new("UICorner"),
-	Icon_14 = Instance.new("ImageLabel"),
-	UIStroke_14 = Instance.new("UIStroke"),
-	UIAspectRatioConstraint_18 = Instance.new("UIAspectRatioConstraint"),
-	Title_16 = Instance.new("TextLabel"),
-	UIGradient_16 = Instance.new("UIGradient"),
-	ChangelogFrame = Instance.new("Frame"),
-	Title_17 = Instance.new("TextLabel"),
-	UICorner_39 = Instance.new("UICorner"),
-	Subtitle_4 = Instance.new("TextLabel"),
-	UIGradient_17 = Instance.new("UIGradient"),
-	UIStroke_15 = Instance.new("UIStroke"),
-	UIGradient_18 = Instance.new("UIGradient"),
-	LocalPlayerFrame = Instance.new("Frame"),
-	Title_18 = Instance.new("TextLabel"),
-	UICorner_40 = Instance.new("UICorner"),
-	Subtitle_5 = Instance.new("TextLabel"),
-	UIStroke_16 = Instance.new("UIStroke"),
-	UIGradient_19 = Instance.new("UIGradient"),
-	UIGradient_20 = Instance.new("UIGradient"),
-	Console_1 = Instance.new("Frame"),
-	UICorner_41 = Instance.new("UICorner"),
-	UIStroke_17 = Instance.new("UIStroke"),
-	UIGradient_21 = Instance.new("UIGradient"),
-	bottom_1 = Instance.new("Frame"),
-	UIListLayout_12 = Instance.new("UIListLayout"),
-	input = Instance.new("Frame"),
-	UICorner_42 = Instance.new("UICorner"),
-	consoleExecBtn = Instance.new("ImageButton"),
-	input_1 = Instance.new("TextBox"),
-	UIPadding_22 = Instance.new("UIPadding"),
-	clearConsole = Instance.new("ImageButton"),
-	Main_13 = Instance.new("Frame"),
-	TextLabel_15 = Instance.new("TextLabel"),
-	UIPadding_23 = Instance.new("UIPadding"),
-	Icon_15 = Instance.new("ImageLabel"),
-	UICorner_43 = Instance.new("UICorner"),
-	_execClipboard = Instance.new("ImageButton"),
-	Main_14 = Instance.new("Frame"),
-	TextLabel_16 = Instance.new("TextLabel"),
-	UIPadding_24 = Instance.new("UIPadding"),
-	Icon_16 = Instance.new("ImageLabel"),
-	UICorner_44 = Instance.new("UICorner"),
-	Top_1 = Instance.new("Frame"),
-	UIListLayout_13 = Instance.new("UIListLayout"),
-	output = Instance.new("ImageButton"),
-	Main_15 = Instance.new("Frame"),
-	Icon_17 = Instance.new("ImageLabel"),
-	UIPadding_25 = Instance.new("UIPadding"),
-	UIListLayout_14 = Instance.new("UIListLayout"),
-	TextLabel_17 = Instance.new("TextLabel"),
-	UIPadding_26 = Instance.new("UIPadding"),
-	Counter = Instance.new("Frame"),
-	Text = Instance.new("TextLabel"),
-	UIPadding_27 = Instance.new("UIPadding"),
-	UICorner_45 = Instance.new("UICorner"),
-	UICorner_46 = Instance.new("UICorner"),
-	warning = Instance.new("ImageButton"),
-	Main_16 = Instance.new("Frame"),
-	Icon_18 = Instance.new("ImageLabel"),
-	UIPadding_28 = Instance.new("UIPadding"),
-	UIListLayout_15 = Instance.new("UIListLayout"),
-	TextLabel_18 = Instance.new("TextLabel"),
-	UIPadding_29 = Instance.new("UIPadding"),
-	Counter_1 = Instance.new("Frame"),
-	Text_1 = Instance.new("TextLabel"),
-	UIPadding_30 = Instance.new("UIPadding"),
-	UICorner_47 = Instance.new("UICorner"),
-	UICorner_48 = Instance.new("UICorner"),
-	error = Instance.new("ImageButton"),
-	Main_17 = Instance.new("Frame"),
-	Icon_19 = Instance.new("ImageLabel"),
-	UIListLayout_16 = Instance.new("UIListLayout"),
-	TextLabel_19 = Instance.new("TextLabel"),
-	UIPadding_31 = Instance.new("UIPadding"),
-	UIPadding_32 = Instance.new("UIPadding"),
-	Counter_2 = Instance.new("Frame"),
-	Text_2 = Instance.new("TextLabel"),
-	UIPadding_33 = Instance.new("UIPadding"),
-	UICorner_49 = Instance.new("UICorner"),
-	UICorner_50 = Instance.new("UICorner"),
-	filter = Instance.new("Frame"),
-	UICorner_51 = Instance.new("UICorner"),
-	btn_1 = Instance.new("ImageButton"),
-	input_2 = Instance.new("TextBox"),
-	UIPadding_34 = Instance.new("UIPadding"),
-	ScrollingFrame_2 = Instance.new("ScrollingFrame"),
-	Container_2 = Instance.new("Frame"),
-	UIListLayout_17 = Instance.new("UIListLayout"),
-	print = Instance.new("Frame"),
-	UICorner_52 = Instance.new("UICorner"),
-	copyText = Instance.new("ImageButton"),
-	Text_3 = Instance.new("TextLabel"),
-	UIPadding_35 = Instance.new("UIPadding"),
-	error_1 = Instance.new("Frame"),
-	UICorner_53 = Instance.new("UICorner"),
-	copyText_1 = Instance.new("ImageButton"),
-	Text_4 = Instance.new("TextLabel"),
-	UIPadding_36 = Instance.new("UIPadding"),
-	warn = Instance.new("Frame"),
-	UICorner_54 = Instance.new("UICorner"),
-	copyText_2 = Instance.new("ImageButton"),
-	Text_5 = Instance.new("TextLabel"),
-	UIPadding_37 = Instance.new("UIPadding"),
-	Scripts_1 = Instance.new("Frame"),
-	UIGradient_22 = Instance.new("UIGradient"),
-	Container_3 = Instance.new("ScrollingFrame"),
-	UIGridLayout = Instance.new("UIGridLayout"),
-	UIPadding_38 = Instance.new("UIPadding"),
-	item_name = Instance.new("ImageButton"),
-	background = Instance.new("ImageLabel"),
-	UICorner_55 = Instance.new("UICorner"),
-	UICorner_56 = Instance.new("UICorner"),
-	top_left = Instance.new("Frame"),
-	views = Instance.new("Frame"),
-	UICorner_57 = Instance.new("UICorner"),
-	icon = Instance.new("ImageLabel"),
-	TextLabel_20 = Instance.new("TextLabel"),
-	UITextSizeConstraint = Instance.new("UITextSizeConstraint"),
-	UIPadding_39 = Instance.new("UIPadding"),
-	UIListLayout_18 = Instance.new("UIListLayout"),
-	UIListLayout_19 = Instance.new("UIListLayout"),
-	UIPadding_40 = Instance.new("UIPadding"),
-	date = Instance.new("Frame"),
-	UICorner_58 = Instance.new("UICorner"),
-	UIListLayout_20 = Instance.new("UIListLayout"),
-	icon_1 = Instance.new("ImageLabel"),
-	TextLabel_21 = Instance.new("TextLabel"),
-	UITextSizeConstraint_1 = Instance.new("UITextSizeConstraint"),
-	UIPadding_41 = Instance.new("UIPadding"),
-	top_right = Instance.new("Frame"),
-	UIPadding_42 = Instance.new("UIPadding"),
-	rating = Instance.new("Frame"),
-	UICorner_59 = Instance.new("UICorner"),
-	UIListLayout_21 = Instance.new("UIListLayout"),
-	icon_2 = Instance.new("ImageLabel"),
-	like_text = Instance.new("TextLabel"),
-	UITextSizeConstraint_2 = Instance.new("UITextSizeConstraint"),
-	UIPadding_43 = Instance.new("UIPadding"),
-	icon_3 = Instance.new("ImageLabel"),
-	dislike_text = Instance.new("TextLabel"),
-	UITextSizeConstraint_3 = Instance.new("UITextSizeConstraint"),
-	info = Instance.new("Frame"),
-	UIListLayout_22 = Instance.new("UIListLayout"),
-	UIPadding_44 = Instance.new("UIPadding"),
-	paid = Instance.new("Frame"),
-	UICorner_60 = Instance.new("UICorner"),
-	icon_4 = Instance.new("ImageLabel"),
-	key = Instance.new("Frame"),
-	UICorner_61 = Instance.new("UICorner"),
-	icon_5 = Instance.new("ImageLabel"),
-	mobile = Instance.new("Frame"),
-	UICorner_62 = Instance.new("UICorner"),
-	icon_6 = Instance.new("ImageLabel"),
-	UIListLayout_23 = Instance.new("UIListLayout"),
-	verified = Instance.new("ImageLabel"),
-	bottom_2 = Instance.new("Frame"),
-	UIGradient_23 = Instance.new("UIGradient"),
-	title = Instance.new("TextLabel"),
-	desc = Instance.new("TextLabel"),
-	UIPadding_45 = Instance.new("UIPadding"),
-	user = Instance.new("TextLabel"),
-	pagination = Instance.new("Frame"),
-	UIListLayout_24 = Instance.new("UIListLayout"),
-	UICorner_63 = Instance.new("UICorner"),
-	first = Instance.new("ImageButton"),
-	UICorner_64 = Instance.new("UICorner"),
-	icon_7 = Instance.new("ImageLabel"),
-	prev = Instance.new("ImageButton"),
-	UICorner_65 = Instance.new("UICorner"),
-	icon_8 = Instance.new("ImageLabel"),
-	page_num = Instance.new("ImageButton"),
-	UIStroke_18 = Instance.new("UIStroke"),
-	UICorner_66 = Instance.new("UICorner"),
-	txt = Instance.new("TextLabel"),
-	UITextSizeConstraint_4 = Instance.new("UITextSizeConstraint"),
-	Top_2 = Instance.new("Frame"),
-	SearchFrame = Instance.new("Frame"),
-	UIListLayout_25 = Instance.new("UIListLayout"),
-	UIPadding_46 = Instance.new("UIPadding"),
-	sicon = Instance.new("ImageButton"),
-	TextBox = Instance.new("TextBox"),
-	UIPadding_47 = Instance.new("UIPadding"),
-	searchBtn = Instance.new("ImageButton"),
-	UIListLayout_26 = Instance.new("UIListLayout"),
-	TextLabel_22 = Instance.new("TextLabel"),
-	UICorner_67 = Instance.new("UICorner"),
-	UICorner_68 = Instance.new("UICorner"),
-	FilterBtn = Instance.new("ImageButton"),
-	filterscript = Instance.new("LocalScript"),
-	icon_9 = Instance.new("ImageLabel"),
-	TextLabel_23 = Instance.new("TextLabel"),
-	UICorner_69 = Instance.new("UICorner"),
-	UIListLayout_27 = Instance.new("UIListLayout"),
-	UICorner_70 = Instance.new("UICorner"),
-	FilterFrame = Instance.new("Frame"),
-	UIGradient_24 = Instance.new("UIGradient"),
-	FilterPanel = Instance.new("Frame"),
-	UIStroke_19 = Instance.new("UIStroke"),
-	Frame = Instance.new("Frame"),
-	TextLabel_24 = Instance.new("TextLabel"),
-	UIListLayout_28 = Instance.new("UIListLayout"),
-	TextLabel_25 = Instance.new("TextLabel"),
-	NoKey = Instance.new("ImageButton"),
-	UIListLayout_29 = Instance.new("UIListLayout"),
-	icon_10 = Instance.new("ImageLabel"),
-	ZTITLE = Instance.new("TextLabel"),
-	circle = Instance.new("ImageLabel"),
-	UIPadding_48 = Instance.new("UIPadding"),
-	UICorner_71 = Instance.new("UICorner"),
-	UIListLayout_30 = Instance.new("UIListLayout"),
-	UIPadding_49 = Instance.new("UIPadding"),
-	MobileOnly = Instance.new("ImageButton"),
-	UIListLayout_31 = Instance.new("UIListLayout"),
-	icon_11 = Instance.new("ImageLabel"),
-	ZTITLE_1 = Instance.new("TextLabel"),
-	circle_1 = Instance.new("ImageLabel"),
-	UIPadding_50 = Instance.new("UIPadding"),
-	UICorner_72 = Instance.new("UICorner"),
-	NotPaid = Instance.new("ImageButton"),
-	UIListLayout_32 = Instance.new("UIListLayout"),
-	icon_12 = Instance.new("ImageLabel"),
-	ZTITLE_2 = Instance.new("TextLabel"),
-	circle_2 = Instance.new("ImageLabel"),
-	UIPadding_51 = Instance.new("UIPadding"),
-	UICorner_73 = Instance.new("UICorner"),
-	NotPatched = Instance.new("ImageButton"),
-	UIListLayout_33 = Instance.new("UIListLayout"),
-	icon_13 = Instance.new("ImageLabel"),
-	ZTITLE_3 = Instance.new("TextLabel"),
-	circle_3 = Instance.new("ImageLabel"),
-	UIPadding_52 = Instance.new("UIPadding"),
-	UICorner_74 = Instance.new("UICorner"),
-	Veried = Instance.new("ImageButton"),
-	UIListLayout_34 = Instance.new("UIListLayout"),
-	icon_14 = Instance.new("ImageLabel"),
-	ZTITLE_4 = Instance.new("TextLabel"),
-	circle_4 = Instance.new("ImageLabel"),
-	UIPadding_53 = Instance.new("UIPadding"),
-	UICorner_75 = Instance.new("UICorner"),
-	OrderBy = Instance.new("Frame"),
-	UIListLayout_35 = Instance.new("UIListLayout"),
-	title_1 = Instance.new("Frame"),
-	UIListLayout_36 = Instance.new("UIListLayout"),
-	UIPadding_54 = Instance.new("UIPadding"),
-	icon_15 = Instance.new("ImageLabel"),
-	ZTITLE_5 = Instance.new("TextLabel"),
-	Frame_1 = Instance.new("Frame"),
-	date_1 = Instance.new("ImageButton"),
-	UIStroke_20 = Instance.new("UIStroke"),
-	UICorner_76 = Instance.new("UICorner"),
-	icon_16 = Instance.new("ImageLabel"),
-	UIListLayout_37 = Instance.new("UIListLayout"),
-	views_1 = Instance.new("ImageButton"),
-	UICorner_77 = Instance.new("UICorner"),
-	UIStroke_21 = Instance.new("UIStroke"),
-	icon_17 = Instance.new("ImageLabel"),
-	likes = Instance.new("ImageButton"),
-	UICorner_78 = Instance.new("UICorner"),
-	UIStroke_22 = Instance.new("UIStroke"),
-	icon_18 = Instance.new("ImageLabel"),
-	dislikes = Instance.new("ImageButton"),
-	UICorner_79 = Instance.new("UICorner"),
-	UIStroke_23 = Instance.new("UIStroke"),
-	icon_19 = Instance.new("ImageLabel"),
-	UIPadding_55 = Instance.new("UIPadding"),
-	Frame2 = Instance.new("Frame"),
-	ASC = Instance.new("ImageButton"),
-	UIStroke_24 = Instance.new("UIStroke"),
-	UICorner_80 = Instance.new("UICorner"),
-	text = Instance.new("TextLabel"),
-	UIListLayout_38 = Instance.new("UIListLayout"),
-	DESC = Instance.new("ImageButton"),
-	UICorner_81 = Instance.new("UICorner"),
-	UIStroke_25 = Instance.new("UIStroke"),
-	text_1 = Instance.new("TextLabel"),
-	UIPadding_56 = Instance.new("UIPadding"),
-	empty = Instance.new("ImageButton"),
-	Save = Instance.new("ImageButton"),
-	TextLabel_26 = Instance.new("TextLabel"),
-	UICorner_82 = Instance.new("UICorner"),
-	LFrame = Instance.new("Frame"),
-	TextLabel_27 = Instance.new("TextLabel"),
-	UITextSizeConstraint_5 = Instance.new("UITextSizeConstraint"),
-	SHPopupFrame = Instance.new("Frame"),
-	Container_4 = Instance.new("Frame"),
-	Frame_2 = Instance.new("Frame"),
-	UIListLayout_39 = Instance.new("UIListLayout"),
-	icon_20 = Instance.new("ImageLabel"),
-	content = Instance.new("TextLabel"),
-	UITextSizeConstraint_6 = Instance.new("UITextSizeConstraint"),
-	UICorner_83 = Instance.new("UICorner"),
-	text_2 = Instance.new("TextLabel"),
-	UITextSizeConstraint_7 = Instance.new("UITextSizeConstraint"),
-	cancel = Instance.new("ImageButton"),
-	UICorner_84 = Instance.new("UICorner"),
-	Main_18 = Instance.new("Frame"),
-	UIPadding_57 = Instance.new("UIPadding"),
-	UIListLayout_40 = Instance.new("UIListLayout"),
-	Icon_20 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_19 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_28 = Instance.new("TextLabel"),
-	UIPadding_58 = Instance.new("UIPadding"),
-	surebtn = Instance.new("ImageButton"),
-	UICorner_85 = Instance.new("UICorner"),
-	Main_19 = Instance.new("Frame"),
-	UIPadding_59 = Instance.new("UIPadding"),
-	UIListLayout_41 = Instance.new("UIListLayout"),
-	Icon_21 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_20 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_29 = Instance.new("TextLabel"),
-	UIPadding_60 = Instance.new("UIPadding"),
-	textInput = Instance.new("TextBox"),
-	UITextSizeConstraint_8 = Instance.new("UITextSizeConstraint"),
-	SHPopup = Instance.new("LocalScript"),
-	FileManager_1 = Instance.new("Frame"),
-	UICorner_86 = Instance.new("UICorner"),
-	UIStroke_26 = Instance.new("UIStroke"),
-	UIGradient_25 = Instance.new("UIGradient"),
-	bottom_3 = Instance.new("Frame"),
-	UIListLayout_42 = Instance.new("UIListLayout"),
-	execFile = Instance.new("ImageButton"),
-	UICorner_87 = Instance.new("UICorner"),
-	Main_20 = Instance.new("Frame"),
-	UIPadding_61 = Instance.new("UIPadding"),
-	UIListLayout_43 = Instance.new("UIListLayout"),
-	Icon_22 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_21 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_30 = Instance.new("TextLabel"),
-	UIPadding_62 = Instance.new("UIPadding"),
-	newFile = Instance.new("ImageButton"),
-	UICorner_88 = Instance.new("UICorner"),
-	Main_21 = Instance.new("Frame"),
-	UIPadding_63 = Instance.new("UIPadding"),
-	UIListLayout_44 = Instance.new("UIListLayout"),
-	Icon_23 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_22 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_31 = Instance.new("TextLabel"),
-	UIPadding_64 = Instance.new("UIPadding"),
-	newFolder = Instance.new("ImageButton"),
-	UICorner_89 = Instance.new("UICorner"),
-	Main_22 = Instance.new("Frame"),
-	UIPadding_65 = Instance.new("UIPadding"),
-	UIListLayout_45 = Instance.new("UIListLayout"),
-	Icon_24 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_23 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_32 = Instance.new("TextLabel"),
-	UIPadding_66 = Instance.new("UIPadding"),
-	DeleteFF = Instance.new("ImageButton"),
-	UICorner_90 = Instance.new("UICorner"),
-	Main_23 = Instance.new("Frame"),
-	UIPadding_67 = Instance.new("UIPadding"),
-	UIListLayout_46 = Instance.new("UIListLayout"),
-	Icon_25 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_24 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_33 = Instance.new("TextLabel"),
-	UIPadding_68 = Instance.new("UIPadding"),
-	preview_btn = Instance.new("ImageButton"),
-	UICorner_91 = Instance.new("UICorner"),
-	Main_24 = Instance.new("Frame"),
-	UIPadding_69 = Instance.new("UIPadding"),
-	UIListLayout_47 = Instance.new("UIListLayout"),
-	Icon_26 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_25 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_34 = Instance.new("TextLabel"),
-	UIPadding_70 = Instance.new("UIPadding"),
-	Section = Instance.new("Folder"),
-	Container_5 = Instance.new("ScrollingFrame"),
-	UICorner_92 = Instance.new("UICorner"),
-	UIGridLayout_1 = Instance.new("UIGridLayout"),
-	UIPadding_71 = Instance.new("UIPadding"),
-	template = Instance.new("ImageButton"),
-	UICorner_93 = Instance.new("UICorner"),
-	Icon_27 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_26 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_35 = Instance.new("TextLabel"),
-	top = Instance.new("Frame"),
-	UICorner_94 = Instance.new("UICorner"),
-	reload = Instance.new("ImageButton"),
-	UICorner_95 = Instance.new("UICorner"),
-	Icon_28 = Instance.new("ImageLabel"),
-	TextLabel_36 = Instance.new("TextLabel"),
-	UITextSizeConstraint_9 = Instance.new("UITextSizeConstraint"),
-	back = Instance.new("ImageButton"),
-	UICorner_96 = Instance.new("UICorner"),
-	Icon_29 = Instance.new("ImageLabel"),
-	FMController = Instance.new("LocalScript"),
-	top_dir = Instance.new("Frame"),
-	UICorner_97 = Instance.new("UICorner"),
-	TextLabel_37 = Instance.new("TextLabel"),
-	treeviewFrame = Instance.new("Frame"),
-	UICorner_98 = Instance.new("UICorner"),
-	UIPadding_72 = Instance.new("UIPadding"),
-	treeview_Studio = Instance.new("LocalScript"),
-	FMPopupFrame = Instance.new("Frame"),
-	Container_6 = Instance.new("Frame"),
-	Frame_3 = Instance.new("Frame"),
-	UIListLayout_48 = Instance.new("UIListLayout"),
-	icon_21 = Instance.new("ImageLabel"),
-	content_1 = Instance.new("TextLabel"),
-	UITextSizeConstraint_10 = Instance.new("UITextSizeConstraint"),
-	UICorner_99 = Instance.new("UICorner"),
-	text_3 = Instance.new("TextLabel"),
-	UITextSizeConstraint_11 = Instance.new("UITextSizeConstraint"),
-	cancel_1 = Instance.new("ImageButton"),
-	UICorner_100 = Instance.new("UICorner"),
-	Main_25 = Instance.new("Frame"),
-	UIPadding_73 = Instance.new("UIPadding"),
-	UIListLayout_49 = Instance.new("UIListLayout"),
-	Icon_30 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_27 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_38 = Instance.new("TextLabel"),
-	UIPadding_74 = Instance.new("UIPadding"),
-	surebtn_1 = Instance.new("ImageButton"),
-	UICorner_101 = Instance.new("UICorner"),
-	Main_26 = Instance.new("Frame"),
-	UIPadding_75 = Instance.new("UIPadding"),
-	UIListLayout_50 = Instance.new("UIListLayout"),
-	Icon_31 = Instance.new("ImageLabel"),
-	UIAspectRatioConstraint_28 = Instance.new("UIAspectRatioConstraint"),
-	TextLabel_39 = Instance.new("TextLabel"),
-	UIPadding_76 = Instance.new("UIPadding"),
-	textInput_1 = Instance.new("TextBox"),
-	UITextSizeConstraint_12 = Instance.new("UITextSizeConstraint"),
-	FMPopup = Instance.new("LocalScript"),
-	swipeController = Instance.new("LocalScript"),
-	SwipeLeft = Instance.new("ImageButton"),
-	bar = Instance.new("Frame"),
-	UICorner_102 = Instance.new("UICorner"),
-	UIStroke_27 = Instance.new("UIStroke"),
-	ImageButton = Instance.new("ImageButton"),
-	UIAspectRatioConstraint_29 = Instance.new("UIAspectRatioConstraint"),
-	SwipeLeft_ = Instance.new("ImageButton"),
-	bar_1 = Instance.new("Frame"),
-	UICorner_103 = Instance.new("UICorner"),
-	ImageButton_1 = Instance.new("ImageButton"),
-	UIStroke_28 = Instance.new("UIStroke"),
-	consoleController = Instance.new("LocalScript"),
-	NavController = Instance.new("LocalScript"),
-	homeController = Instance.new("LocalScript"),
-	OdeScriptEditor = Instance.new("ModuleScript"),
-	Hooks = Instance.new("Folder"),
-	AutoIndent = Instance.new("ModuleScript"),
-	AutoWrap = Instance.new("ModuleScript"),
-	Modules = Instance.new("Folder"),
-	LuaTable = Instance.new("ModuleScript"),
-	SignalModule = Instance.new("ModuleScript"),
-	GetTextBoxScrolling = Instance.new("ModuleScript"),
-	language = Instance.new("ModuleScript"),
-	lexer = Instance.new("ModuleScript"),
-	Storage = Instance.new("Folder"),
-	LineNumber = Instance.new("TextLabel"),
-	RichOverlayLabel = Instance.new("TextLabel"),
-	OSEBackground = Instance.new("Frame"),
-	LineNumberBackground = Instance.new("Frame"),
-	LineNumberContainer = Instance.new("Frame"),
-	UIListLayout_51 = Instance.new("UIListLayout"),
-	RichOverlayContainer = Instance.new("Frame"),
-	ShiftContainer = Instance.new("Frame"),
-	UIListLayout_52 = Instance.new("UIListLayout"),
-	CodeField = Instance.new("TextBox"),
-	editorController = Instance.new("LocalScript"),
-	ScriptsController = Instance.new("Folder"),
-	rscripts_net = Instance.new("LocalScript")
-}
-
-_trigon.Trigon.IgnoreGuiInset = true
-_trigon.Trigon.DisplayOrder = -1
-_trigon.Trigon.Name = "Trigon"
-_trigon.Trigon.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
-_trigon.Trigon.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-_trigon.Trigon.Parent = gethui()
-
-_trigon.Canvas.BorderSizePixel = 0
-_trigon.Canvas.BackgroundColor3 = Color3.fromRGB(39, 41, 46)
-_trigon.Canvas.AnchorPoint = Vector2.new(0.5, 0.5)
-_trigon.Canvas.Size = UDim2.new(1, 0, 1, 0)
-_trigon.Canvas.BorderColor3 = Color3.fromRGB(0, 0, 0)
-_trigon.Canvas.BackgroundTransparency = 1
-_trigon.Canvas.Name = "Canvas"
-_trigon.Canvas.Position = UDim2.new(0.5, 0, 0.5, 0)
-_trigon.Canvas.Parent = _trigon.Trigon
-
-_trigon.Container.BorderSizePixel = 0
-_trigon.Container.BackgroundColor3 = Color3.fromRGB(39, 41, 46)
-_trigon.Container.AnchorPoint = Vector2.new(0.5, 0.5)
-_trigon.Container.Size = UDim2.new(1, 0, 1, 0)
-_trigon.Container.BorderColor3 = Color3.fromRGB(0, 0, 0)
-_trigon.Container.BackgroundTransparency = 1
-_trigon.Container.Name = "Container"
-_trigon.Container.Position = UDim2.new(0.5, 0, 0.5, 0)
-_trigon.Container.Parent = _trigon.Canvas
 
 _trigon.Main.BorderSizePixel = 0
 _trigon.Main.BackgroundColor3 = Color3.fromRGB(39, 41, 46)
