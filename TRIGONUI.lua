@@ -74,7 +74,7 @@
 	local TweenService = game:GetService("TweenService")
 	local UserInputService = game:GetService("UserInputService")
 
-	ScreenGui.Name = "Trigon"
+	ScreenGui.Name = "Trigon V3 by sindex.saliii"
 	ScreenGui.IgnoreGuiInset = true
 	ScreenGui.ResetOnSpawn = false
 	ScreenGui.Parent = gethui()
@@ -96,7 +96,7 @@
 	Header.Parent = Main
 
 	Title.Name = "Title"
-	Title.Text = "Trigon"
+	Title.Text = "Trigon V3 by sindex.saliii"
 	Title.Font = Enum.Font.GothamSemibold
 	Title.TextSize = 20
 	Title.TextColor3 = Color3.fromRGB(245,245,245)
@@ -313,7 +313,7 @@ _trigon.TextLabel.TextSize = 14
 _trigon.TextLabel.Size = UDim2.new(0.809284, 0, 0.329268, 0)
 _trigon.TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 _trigon.TextLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-_trigon.TextLabel.Text = "Trigon Evo "
+_trigon.TextLabel.Text = "Saliii's Trigon V3"
 _trigon.TextLabel.BackgroundTransparency = 1
 _trigon.TextLabel.TextXAlignment = Enum.TextXAlignment.Left
 _trigon.TextLabel.Parent = _trigon.TopInfo
@@ -348,7 +348,7 @@ _trigon.Avatar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 _trigon.Avatar.Position = UDim2.new(-0.105838, 0, 0.550381, 0)
 _trigon.Avatar.Name = "Avatar"
 _trigon.Avatar.AnchorPoint = Vector2.new(0.5, 0.5)
-_trigon.Avatar.Image = "http://www.roblox.com/asset/?id=5004759484"
+_trigon.Avatar.Image = "http://www.roblox.com/asset/?id=115973779230541"
 _trigon.Avatar.Size = UDim2.new(0.328935, 0, 1.11037, 0)
 _trigon.Avatar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 _trigon.Avatar.BackgroundTransparency = 1
