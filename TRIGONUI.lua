@@ -277,17 +277,61 @@
 		showEditor(true)
 	end)
 
-	ConsoleBtn.MouseButton1Click:Connect(function()
-		showEditor(false)
+	local dragging = false
+	local dragInput, dragStart, startPos
+	local function update(input)
+		local delta = input.Position - dragStart
+		Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	Header.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = Main.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
 	end)
 
+	Header.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
 
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
 
-_trigon.Main.BorderSizePixel = 0
-_trigon.Main.BackgroundColor3 = Color3.fromRGB(39, 41, 46)
-_trigon.Main.AnchorPoint = Vector2.new(0.5, 0.5)
-_trigon.Main.Size = UDim2.new(1.00037, 0, 1, 0)
-_trigon.Main.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	local loadFn = loadstring or load
+	local function safeRun2()
+		Output.Text = ""
+		local origPrint = print
+		print = function(...)
+			appendOutput(...)
+			origPrint(...)
+		end
+		local chunk, loadErr = loadFn(CodeBox.Text)
+		if not chunk then
+			appendOutput(loadErr or "load error")
+			print = origPrint
+			return
+		end
+		local ok, err = pcall(chunk)
+		if not ok and err then
+			appendOutput(err)
+		end
+		print = origPrint
+	end
+
+	Execute.MouseButton1Click:Connect(safeRun2)
+
 _trigon.Main.Name = "Main"
 _trigon.Main.Position = UDim2.new(0.499813, 0, 0.5, 0)
 _trigon.Main.Parent = _trigon.Container
