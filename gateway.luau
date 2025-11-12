@@ -1,9 +1,10 @@
----- soon
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local workspace = game.workspace
-local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+
 local Events = ReplicatedStorage:WaitForChild("Events"):WaitForChild("To_Server")
 
 local Window = Rayfield:CreateWindow({
@@ -14,16 +15,33 @@ local Window = Rayfield:CreateWindow({
    ShowText = "Gayfield",
    Theme = "Serenity",
    ToggleUIKeybind = "K",
-   ConfigurationSaving = {Enabled = true, FileName = "Albiology Hub"},
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+   ConfigurationSaving = {Enabled = true, FolderName = nil, FileName = "Albiology Hub"},
+   Discord = {Enabled = false, Invite = "noinvitelink", RememberJoins = true},
    KeySystem = true,
-   KeySettings = {Title = "Albiology Hub V1", Subtitle = "Key System", Note = "Key is EternalV1", FileName = "Enter Key", SaveKey = true, GrabKeyFromSite = false, Key = {"EternalV1"}}
+   KeySettings = {Title = "Albiology Hub V1", Subtitle = "Key System", Note = "Key for Albiology hub is EternalV1", FileName = "Enter Key", SaveKey = true, GrabKeyFromSite = false, Key = {"EternalV1"}}
 })
 
+local randomTime = math.random(500, 2000) / 100
+warn("[ Sindex Client ] - Loaded in " .. string.format("%.2f", randomTime) .. " ms")
+Rayfield:Notify({Title = "🎉 Welcome to AlBiology Hub", Content = "Script Successfully Loaded!", Duration = 6.5, Image = "box"})
+
 local Main = Window:CreateTab("Main","compass")
+local CombatSection = Main:CreateSection("⚔️ Features")
 
 getgenv().AutoClick = false
 getgenv().AutoFarm = false
 getgenv().FarmMethod = "Instant"
+getgenv().SelectedEnemyNames = {}
+getgenv().AutoAddStats = false
+getgenv().SelectedStats = {}
+getgenv().AutoJoinDungeon = false
+getgenv().AutoFarmDungeon = false
+getgenv().AutoOpenStar = false
+getgenv().SelectedStar = "Star_1"
+getgenv().StarOpenDelay = 0.25
+getgenv().StarOpenAmount = 9999
 
 local function Click()
     pcall(function()
@@ -31,201 +49,293 @@ local function Click()
     end)
 end
 
+Main:CreateToggle({Name = "🖱️ Auto Clicker", CurrentValue = false, Flag = "AutoClicker", Callback = function(v) getgenv().AutoClick = v end})
 task.spawn(function()
-    while task.wait() do
+    while task.wait(0.12) do
         if getgenv().AutoClick then
             Click()
         end
     end
 end)
 
-local Enemies = {}
-local Selected = {}
+local EnemyLists = {}
+local function UpdateEnemyLists()
+    EnemyLists = {}
+    local success,mons = pcall(function()
+        return Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
+    end)
+    for _,monster in pairs(mons) do
+        local title = monster:GetAttribute("Title") or monster.Name
+        if not table.find(EnemyLists, title) then table.insert(EnemyLists, title) end
+    end
+end
+UpdateEnemyLists()
 
-local function RefreshEnemies()
-    Enemies = {}
-    for _, v in pairs(workspace:WaitForChild("Debris"):WaitForChild("Monsters"):GetChildren()) do
-        local title = v:GetAttribute("Title") or v.Name
-        if not table.find(Enemies, title) then
-            table.insert(Enemies, title)
+local SelectEnemy = Main:CreateDropdown({
+    Name = "🎯 Select Enemy",
+    Options = EnemyLists,
+    CurrentOption = nil,
+    MultipleOptions = true,
+    Flag = "Dropdown1",
+    Callback = function(Options)
+        getgenv().SelectedEnemyNames = Options or {}
+        Rayfield:Notify({Title = "🎯 Enemy Selection", Content = "Selected: " .. (table.concat(Options, ", ") or ""), Duration = 4, Image = "box"})
+    end,
+})
+Main:CreateButton({Name = "🔄 Refresh Enemy Lists", Callback = function() UpdateEnemyLists(); SelectEnemy:Refresh(EnemyLists); Rayfield:Notify({Title="✅ Enemy List Updated", Content="Monster list has been refreshed!", Duration=4, Image="box"}) end})
+
+Main:CreateDropdown({Name = "🚶 Farming Method", Options = {"Instant","Tween","Walk"}, CurrentOption = "Instant", MultipleOptions = false, Flag = "FarmingMethod", Callback = function(opt) getgenv().FarmMethod = opt end})
+Main:CreateToggle({Name = "🤖 Auto Farm Monster", CurrentValue = false, Flag = "AutoFarmMonster", Callback = function(v) getgenv().AutoFarm = v end})
+
+local StatsSection = Main:CreateSection("📊 Stats Management")
+local StatsList = {"Damage", "Energy", "Coins", "Luck"}
+local SelectedStats = {}
+local StatsDropdown = Main:CreateDropdown({Name = "📈 Auto Add Stats", Options = StatsList, CurrentOption = nil, MultipleOptions = true, Flag = "StatsDropdown", Callback = function(Options) SelectedStats = Options end})
+Main:CreateToggle({Name = "⚡ Auto Add Stats", CurrentValue = false, Flag = "AutoStatsToggle", Callback = function(v) getgenv().AutoAddStats = v end})
+task.spawn(function()
+    while task.wait(0.6) do
+        if getgenv().AutoAddStats and next(SelectedStats) ~= nil then
+            for _, statName in pairs(SelectedStats) do
+                pcall(function()
+                    Events:FireServer({Name = "Primary_" .. statName, Action = "Assign_Level_Stats", Amount = 1})
+                end)
+            end
         end
     end
-end
+end)
 
-RefreshEnemies()
-
-local EnemyDropdown = Main:CreateDropdown({
-    Name = "🎯 Select Enemy",
-    Options = Enemies,
-    MultipleOptions = true,
-    Callback = function(opt) Selected = opt end
-})
-
-Main:CreateButton({
-    Name = "🔄 Refresh Enemy List",
-    Callback = function()
-        RefreshEnemies()
-        EnemyDropdown:Refresh(Enemies)
+local DungeonSection = Main:CreateSection("🏰 Dungeon Features")
+local DungeonList = {"Easy", "Medium", "Hard", "Insane", "Crazy", "Nightmare", "Leaf"}
+local SelectedDungeons = {}
+local DungeonDropdown = Main:CreateDropdown({Name = "🎪 Select Dungeon", Options = DungeonList, CurrentOption = nil, MultipleOptions = true, Flag = "DungeonDropdown", Callback = function(Options)
+    SelectedDungeons = {}
+    for _, dungeonName in pairs(Options or {}) do
+        if dungeonName == "Leaf" then table.insert(SelectedDungeons, "Leaf_Raid") else table.insert(SelectedDungeons, "Dungeon_" .. dungeonName) end
     end
-})
+end})
+Main:CreateToggle({Name = "🚪 Auto Join Dungeon", CurrentValue = false, Flag = "AutoJoinToggle", Callback = function(v) getgenv().AutoJoinDungeon = v end})
+Main:CreateToggle({Name = "⚔️ Auto Farm Dungeon", CurrentValue = false, Flag = "AutoFarmToggle", Callback = function(v) getgenv().AutoFarmDungeon = v end})
 
-Main:CreateDropdown({
-    Name = "⚔️ Farming Method",
-    Options = {"Instant","Tween","Walk"},
-    CurrentOption = "Instant",
-    Callback = function(opt) getgenv().FarmMethod = opt end
-})
-
-Main:CreateToggle({
-    Name = "🤖 Auto Farm",
-    CurrentValue = false,
-    Callback = function(v) getgenv().AutoFarm = v end
-})
-
-local function NoClip()
-    local c = Players.LocalPlayer.Character
-    if not c then return end
-    for _,v in pairs(c:GetDescendants()) do
-        if v:IsA("BasePart") then v.CanCollide = false end
+task.spawn(function()
+    while task.wait(5) do
+        if getgenv().AutoJoinDungeon and next(SelectedDungeons) ~= nil then
+            for _, dungeonName in pairs(SelectedDungeons) do
+                pcall(function()
+                    Events:FireServer({Action = "_Enter_Dungeon", Name = dungeonName})
+                end)
+            end
+        end
     end
-end
+end)
 
-local function Clip()
-    local c = Players.LocalPlayer.Character
-    if not c then return end
-    for _,v in pairs(c:GetDescendants()) do
-        if v:IsA("BasePart") then v.CanCollide = true end
+task.spawn(function()
+    while task.wait(0.2) do
+        if getgenv().AutoFarmDungeon then
+            local player = Players.LocalPlayer
+            local character = player and player.Character
+            if not (character and character:FindFirstChild("HumanoidRootPart")) then continue end
+            local hrp = character.HumanoidRootPart
+            local nearest, nd = nil, math.huge
+            local mons = Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
+            for _, m in pairs(mons) do
+                local prim = m:FindFirstChild("HumanoidRootPart") or m.PrimaryPart
+                if prim then
+                    local d = (hrp.Position - prim.Position).Magnitude
+                    if d < nd then nd = d; nearest = prim end
+                end
+            end
+            if nearest then
+                pcall(function()
+                    hrp.CFrame = nearest.CFrame
+                end)
+            end
+        end
     end
+end)
+
+local GachaTab = Window:CreateTab("🎮 Gacha & Stats", "gamepad")
+local StarList = {}
+for i=1,28 do table.insert(StarList, "Star_"..i) end
+local SelectedStar = "Star_1"
+GachaTab:CreateDropdown({Name = "📦 Select Star Type", Options = StarList, CurrentOption = "Star_1", MultipleOptions = false, Flag = "GachaDropdown", Callback = function(opt) SelectedStar = opt end})
+GachaTab:CreateToggle({Name = "⭐ Auto Open Star (Max)", CurrentValue = false, Flag = "AutoOpenStar", Callback = function(v) getgenv().AutoOpenStar = v if v then task.spawn(function() while getgenv().AutoOpenStar do pcall(function() Events:FireServer({Open_Amount = getgenv().StarOpenAmount, Action = "_Stars", Name = SelectedStar}) end); task.wait(getgenv().StarOpenDelay) end end) end end})
+
+local function CreatePathAt(position)
+    local part = Instance.new("Part")
+    part.Size = Vector3.new(5,1,5)
+    part.Anchored = true
+    part.CanCollide = false
+    part.Transparency = 0.3
+    part.Color = Color3.fromRGB(50,255,100)
+    part.CFrame = CFrame.new(position - Vector3.new(0,3,0))
+    part.Parent = Workspace
+    Debris:AddItem(part, 1)
 end
 
-local function CreatePath(pos)
-    local p = Instance.new("Part")
-    p.Size = Vector3.new(6, 0.5, 6)
-    p.Anchored = true
-    p.CanCollide = false
-    p.Transparency = 0.3
-    p.Color = Color3.fromRGB(50,255,100)
-    p.CFrame = CFrame.new(pos - Vector3.new(0,3,0))
-    p.Parent = workspace
-    game:GetService("Debris"):AddItem(p,1)
+local function IsMonsterAlive(monster)
+    if not monster or not monster.Parent then return false end
+    local att = monster:GetAttribute("Health")
+    if typeof(att) == "number" then
+        if att <= 0 then return false end
+        return true
+    end
+    local hum = monster:FindFirstChildOfClass("Humanoid")
+    if hum then
+        return hum.Health > 0
+    end
+    return true
 end
 
-local function IsAlive(m)
-    if not m or not m.Parent then return false end
-    local h = m:GetAttribute("Health")
-    if h and h > 0 then return true end
-    local hum = m:FindFirstChildOfClass("Humanoid")
-    return hum and hum.Health > 0
-end
-
-local function FindNearest()
-    local p = Players.LocalPlayer
-    local c = p.Character
-    if not c then return end
-    local hrp = c:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    local nearest, dist = nil, math.huge
-    for _, m in pairs(workspace:WaitForChild("Debris"):WaitForChild("Monsters"):GetChildren()) do
-        local t = m:GetAttribute("Title") or m.Name
-        if table.find(Selected,t) and IsAlive(m) then
-            local root = m:FindFirstChild("HumanoidRootPart")
-            if root then
-                local d = (hrp.Position - root.Position).Magnitude
-                if d < dist then dist = d nearest = m end
+local function FindTargetFromNames(names)
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not (char and char:FindFirstChild("HumanoidRootPart")) then return nil end
+    local hrp = char.HumanoidRootPart
+    local nearest = nil
+    local nd = math.huge
+    local mons = Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
+    for _, m in pairs(mons) do
+        local title = m:GetAttribute("Title") or m.Name
+        if table.find(names, title) and IsMonsterAlive(m) then
+            local prim = m:FindFirstChild("HumanoidRootPart") or m.PrimaryPart
+            if prim then
+                local d = (hrp.Position - prim.Position).Magnitude
+                if d < nd then nd = d; nearest = m end
             end
         end
     end
     return nearest
 end
 
-local function TeleportInstant(hrp,target)
-    hrp.CFrame = CFrame.new(target.Position) + Vector3.new(0,3,0)
-    CreatePath(hrp.Position)
+local OriginalCollides = {}
+local function NoClip()
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not char then return end
+    OriginalCollides = {}
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            OriginalCollides[part] = part.CanCollide
+            part.CanCollide = false
+        end
+    end
 end
 
-local function TweenTarget(hrp,target)
-    local info = TweenInfo.new(0.6, Enum.EasingStyle.Linear)
-    local tween = TweenService:Create(hrp, info, {CFrame = CFrame.new(target.Position) + Vector3.new(0,3,0)})
-    tween:Play()
-    tween.Completed:Wait()
-    CreatePath(hrp.Position)
+local function Clip()
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not char then return end
+    for part, v in pairs(OriginalCollides) do
+        if part and part:IsA("BasePart") then
+            pcall(function() part.CanCollide = v end)
+        end
+    end
+    OriginalCollides = {}
 end
 
-local function WalkTarget(humanoid,targetPos)
+local function TeleportTarget(targetPrim)
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
+    local hrp = char.HumanoidRootPart
+    pcall(function()
+        hrp.CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0)
+    end)
+    CreatePathAt(hrp.Position)
+end
+
+local function TweenTarget(targetPrim)
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
+    local hrp = char.HumanoidRootPart
+    local info = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
+    local ok, tween = pcall(function() return TweenService:Create(hrp, info, {CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0)}) end)
+    if ok and tween then
+        tween:Play()
+        local suc = pcall(function() tween.Completed:Wait() end)
+        CreatePathAt(hrp.Position)
+    else
+        pcall(function() hrp.CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0) end)
+        CreatePathAt(hrp.Position)
+    end
+end
+
+local function WalkTargetTo(targetPos)
+    local player = Players.LocalPlayer
+    local char = player and player.Character
+    if not (char and char:FindFirstChildOfClass("Humanoid")) then return false end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
     NoClip()
     humanoid:MoveTo(targetPos)
-    local t = tick()
-    while tick()-t < 10 do
-        if (humanoid.RootPart.Position - targetPos).Magnitude < 5 then break end
-        task.wait(0.2)
+    local start = tick()
+    while tick() - start < 12 do
+        if (char.PrimaryPart and (char.PrimaryPart.Position - targetPos).Magnitude or 0) < 6 then
+            Clip()
+            return true
+        end
+        task.wait(0.18)
     end
     Clip()
+    return false
 end
 
-local function AttackTarget(m)
-    while IsAlive(m) and getgenv().AutoFarm do
+local function AttackTarget(monster)
+    if not monster or not monster.Parent then return end
+    while getgenv().AutoFarm and IsMonsterAlive(monster) do
         Click()
-        task.wait(0.15)
+        task.wait(0.14)
     end
 end
 
 task.spawn(function()
-    while task.wait(0.1) do
-        if getgenv().AutoFarm and next(Selected) then
-            local p = Players.LocalPlayer
-            local c = p.Character
-            if not c then continue end
-            local hrp = c:FindFirstChild("HumanoidRootPart")
-            local hum = c:FindFirstChildOfClass("Humanoid")
-            if not hrp or not hum then continue end
-            local target = FindNearest()
-            if target then
-                local root = target:FindFirstChild("HumanoidRootPart")
-                if root then
+    while task.wait(0.12) do
+        if getgenv().AutoFarm and next(getgenv().SelectedEnemyNames) ~= nil then
+            local target = FindTargetFromNames(getgenv().SelectedEnemyNames)
+            if target and target.Parent then
+                local prim = target:FindFirstChild("HumanoidRootPart") or target.PrimaryPart
+                if prim then
                     if getgenv().FarmMethod == "Instant" then
-                        TeleportInstant(hrp,root)
+                        TeleportTarget(prim)
                     elseif getgenv().FarmMethod == "Tween" then
-                        TweenTarget(hrp,root)
-                    elseif getgenv().FarmMethod == "Walk" then
-                        WalkTarget(hum,root.Position)
+                        NoClip()
+                        TweenTarget(prim)
+                        Clip()
+                    else
+                        WalkTargetTo(prim.Position)
                     end
                     AttackTarget(target)
+                end
+            else
+                task.wait(0.6)
+            end
+        else
+            task.wait(0.4)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.2) do
+        if getgenv().AutoFarm then
+            local player = Players.LocalPlayer
+            local char = player and player.Character
+            if not (char and char:FindFirstChild("HumanoidRootPart")) then continue end
+            if getgenv().FarmMethod == "Walk" then
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
                 end
             end
         end
     end
 end)
 
-local Gacha = Window:CreateTab("🎰 Gacha","star")
-
-local Stars = {}
-for i=1,28 do table.insert(Stars,"Star_"..i) end
-local StarSelected = "Star_1"
-
-Gacha:CreateDropdown({
-    Name="Select Star",
-    Options=Stars,
-    CurrentOption="Star_1",
-    Callback=function(opt) StarSelected = opt end
-})
-
-getgenv().AutoOpenStar = false
-
-local function OpenStar()
-    while getgenv().AutoOpenStar do
-        local args = {{Open_Amount=999999,Action="_Stars",Name=StarSelected}}
-        Events:FireServer(unpack(args))
-        task.wait(0.3)
+local function RefreshLoop()
+    while task.wait(5) do
+        UpdateEnemyLists()
+        SelectEnemy:Refresh(EnemyLists)
     end
 end
-
-Gacha:CreateToggle({
-    Name="⭐ Auto Open Max Star",
-    CurrentValue=false,
-    Callback=function(v)
-        getgenv().AutoOpenStar = v
-        if v then
-            task.spawn(OpenStar)
-        end
-    end
-})
+task.spawn(RefreshLoop)
