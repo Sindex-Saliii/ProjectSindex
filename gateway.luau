@@ -442,7 +442,7 @@ local function animateIn()
 	fastwait(1.0)
 	
 	if game.PlaceId == 90462358603255 then
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Sindex-Saliii/ProjectSindex/refs/heads/main/gateway.luau"))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Sindex-Saliii/ProjectSindex/refs/heads/main/AnimeEternal.lua"))()
 	else 
        game:GetService("Players").LocalPlayer:Kick("Game Not Supported")
 	end
