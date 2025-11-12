@@ -4,6 +4,7 @@ local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local GuiService = game:GetService("GuiService")
 local CoreGui = game:GetService("CoreGui")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local function fastwait(t)
 	if t and t > 0 then task.wait(t) else task.wait() end
@@ -40,21 +41,9 @@ local SupportedGames = {
 }
 
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
 local LoaderGui = safeCreate("ScreenGui", {Name = "SindexLoader", ResetOnSpawn = false, DisplayOrder = 10, ZIndexBehavior = Enum.ZIndexBehavior.Sibling}, CoreGui)
 
 local Main = safeCreate("Frame", {Size = getResponsiveSize(), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(10,10,15), BackgroundTransparency = 1, ClipsDescendants = true}, LoaderGui)
-
-local BackgroundGradient = safeCreate("UIGradient", {
-	Rotation = 45,
-	Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(25,15,40)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15,10,25)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(25,15,40))
-	}),
-	Transparency = NumberSequence.new(1)
-}, Main)
 
 local MainContainer = safeCreate("Frame", {Size = UDim2.new(1, -40, 1, -40), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(18,18,28), BackgroundTransparency = 1}, Main)
 safeCreate("UICorner", {CornerRadius = UDim.new(0, 24)}, MainContainer)
@@ -114,7 +103,6 @@ local Subtitle = safeCreate("TextLabel", {
 	TextColor3 = Color3.fromRGB(180,180,220),
 	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
 	TextSize = 14,
-	TextTransparency = 1,
 	TextTransparency = 1
 }, LogoContainer)
 
@@ -340,11 +328,8 @@ local function updateProgress(progress, message)
 	}):Play()
 	
 	if progress % 25 == 0 then
-		TweenService:Create(BarGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		TweenService:Create(BarGlow, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			ImageTransparency = 0.6
-		}):Play()
-		TweenService:Create(BarGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-			ImageTransparency = 1
 		}):Play()
 	end
 end
@@ -354,10 +339,6 @@ local function animateIn()
 	
 	TweenService:Create(Main, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 		BackgroundTransparency = 0
-	}):Play()
-	
-	TweenService:Create(BackgroundGradient, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-		Transparency = NumberSequence.new(0)
 	}):Play()
 	
 	TweenService:Create(MainContainer, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -426,7 +407,7 @@ local function animateIn()
 	UsernameLabel.Text = "Username: " .. player.Name
 	ExecutorLabel.Text = "Executor: " .. identifyexecutor()
 	PlaceIdLabel.Text = "Place ID: " .. game.PlaceId
-	GameNameLabel.Text = "Game: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+	GameNameLabel.Text = "Game: " .. MarketplaceService:GetProductInfo(game.PlaceId).Name
 	
 	TweenService:Create(InfoContainer, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 		BackgroundTransparency = 0
@@ -462,6 +443,8 @@ local function animateIn()
 	
 	if game.PlaceId == 90462358603255 then
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Sindex-Saliii/ProjectSindex/refs/heads/main/gateway.luau"))()
+	else 
+       game:GetService("Players").LocalPlayer:Kick("Game Not Supported")
 	end
 	
 	local t3 = 0.8
