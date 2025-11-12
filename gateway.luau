@@ -1,341 +1,488 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local Debris = game:GetService("Debris")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local GuiService = game:GetService("GuiService")
+local CoreGui = game:GetService("CoreGui")
 
-local Events = ReplicatedStorage:WaitForChild("Events"):WaitForChild("To_Server")
-
-local Window = Rayfield:CreateWindow({
-   Name = "[ Anime Eternal ] Albiology Hub",
-   Icon = "biohazard",
-   LoadingTitle = "Anime Eternal - Next Gen",
-   LoadingSubtitle = "Powered by Albiology Hub",
-   ShowText = "Gayfield",
-   Theme = "Serenity",
-   ToggleUIKeybind = "K",
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false,
-   ConfigurationSaving = {Enabled = true, FolderName = nil, FileName = "Albiology Hub"},
-   Discord = {Enabled = false, Invite = "noinvitelink", RememberJoins = true},
-   KeySystem = true,
-   KeySettings = {Title = "Albiology Hub V1", Subtitle = "Key System", Note = "Key for Albiology hub is EternalV1", FileName = "Enter Key", SaveKey = true, GrabKeyFromSite = false, Key = {"EternalV1"}}
-})
-
-local randomTime = math.random(500, 2000) / 100
-warn("[ Sindex Client ] - Loaded in " .. string.format("%.2f", randomTime) .. " ms")
-Rayfield:Notify({Title = "🎉 Welcome to AlBiology Hub", Content = "Script Successfully Loaded!", Duration = 6.5, Image = "box"})
-
-local Main = Window:CreateTab("Main","compass")
-local CombatSection = Main:CreateSection("⚔️ Features")
-
-getgenv().AutoClick = false
-getgenv().AutoFarm = false
-getgenv().FarmMethod = "Instant"
-getgenv().SelectedEnemyNames = {}
-getgenv().AutoAddStats = false
-getgenv().SelectedStats = {}
-getgenv().AutoJoinDungeon = false
-getgenv().AutoFarmDungeon = false
-getgenv().AutoOpenStar = false
-getgenv().SelectedStar = "Star_1"
-getgenv().StarOpenDelay = 0.25
-getgenv().StarOpenAmount = 9999
-
-local function Click()
-    pcall(function()
-        Events:FireServer({Action = "_Mouse_Click"})
-    end)
+local function fastwait(t)
+	if t and t > 0 then task.wait(t) else task.wait() end
 end
 
-Main:CreateToggle({Name = "🖱️ Auto Clicker", CurrentValue = false, Flag = "AutoClicker", Callback = function(v) getgenv().AutoClick = v end})
-task.spawn(function()
-    while task.wait(0.12) do
-        if getgenv().AutoClick then
-            Click()
-        end
-    end
-end)
-
-local EnemyLists = {}
-local function UpdateEnemyLists()
-    EnemyLists = {}
-    local success,mons = pcall(function()
-        return Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
-    end)
-    for _,monster in pairs(mons) do
-        local title = monster:GetAttribute("Title") or monster.Name
-        if not table.find(EnemyLists, title) then table.insert(EnemyLists, title) end
-    end
-end
-UpdateEnemyLists()
-
-local SelectEnemy = Main:CreateDropdown({
-    Name = "🎯 Select Enemy",
-    Options = EnemyLists,
-    CurrentOption = nil,
-    MultipleOptions = true,
-    Flag = "Dropdown1",
-    Callback = function(Options)
-        getgenv().SelectedEnemyNames = Options or {}
-        Rayfield:Notify({Title = "🎯 Enemy Selection", Content = "Selected: " .. (table.concat(Options, ", ") or ""), Duration = 4, Image = "box"})
-    end,
-})
-Main:CreateButton({Name = "🔄 Refresh Enemy Lists", Callback = function() UpdateEnemyLists(); SelectEnemy:Refresh(EnemyLists); Rayfield:Notify({Title="✅ Enemy List Updated", Content="Monster list has been refreshed!", Duration=4, Image="box"}) end})
-
-Main:CreateDropdown({Name = "🚶 Farming Method", Options = {"Instant","Tween","Walk"}, CurrentOption = "Instant", MultipleOptions = false, Flag = "FarmingMethod", Callback = function(opt) getgenv().FarmMethod = opt end})
-Main:CreateToggle({Name = "🤖 Auto Farm Monster", CurrentValue = false, Flag = "AutoFarmMonster", Callback = function(v) getgenv().AutoFarm = v end})
-
-local StatsSection = Main:CreateSection("📊 Stats Management")
-local StatsList = {"Damage", "Energy", "Coins", "Luck"}
-local SelectedStats = {}
-local StatsDropdown = Main:CreateDropdown({Name = "📈 Auto Add Stats", Options = StatsList, CurrentOption = nil, MultipleOptions = true, Flag = "StatsDropdown", Callback = function(Options) SelectedStats = Options end})
-Main:CreateToggle({Name = "⚡ Auto Add Stats", CurrentValue = false, Flag = "AutoStatsToggle", Callback = function(v) getgenv().AutoAddStats = v end})
-task.spawn(function()
-    while task.wait(0.6) do
-        if getgenv().AutoAddStats and next(SelectedStats) ~= nil then
-            for _, statName in pairs(SelectedStats) do
-                pcall(function()
-                    Events:FireServer({Name = "Primary_" .. statName, Action = "Assign_Level_Stats", Amount = 1})
-                end)
-            end
-        end
-    end
-end)
-
-local DungeonSection = Main:CreateSection("🏰 Dungeon Features")
-local DungeonList = {"Easy", "Medium", "Hard", "Insane", "Crazy", "Nightmare", "Leaf"}
-local SelectedDungeons = {}
-local DungeonDropdown = Main:CreateDropdown({Name = "🎪 Select Dungeon", Options = DungeonList, CurrentOption = nil, MultipleOptions = true, Flag = "DungeonDropdown", Callback = function(Options)
-    SelectedDungeons = {}
-    for _, dungeonName in pairs(Options or {}) do
-        if dungeonName == "Leaf" then table.insert(SelectedDungeons, "Leaf_Raid") else table.insert(SelectedDungeons, "Dungeon_" .. dungeonName) end
-    end
-end})
-Main:CreateToggle({Name = "🚪 Auto Join Dungeon", CurrentValue = false, Flag = "AutoJoinToggle", Callback = function(v) getgenv().AutoJoinDungeon = v end})
-Main:CreateToggle({Name = "⚔️ Auto Farm Dungeon", CurrentValue = false, Flag = "AutoFarmToggle", Callback = function(v) getgenv().AutoFarmDungeon = v end})
-
-task.spawn(function()
-    while task.wait(5) do
-        if getgenv().AutoJoinDungeon and next(SelectedDungeons) ~= nil then
-            for _, dungeonName in pairs(SelectedDungeons) do
-                pcall(function()
-                    Events:FireServer({Action = "_Enter_Dungeon", Name = dungeonName})
-                end)
-            end
-        end
-    end
-end)
-
-task.spawn(function()
-    while task.wait(0.2) do
-        if getgenv().AutoFarmDungeon then
-            local player = Players.LocalPlayer
-            local character = player and player.Character
-            if not (character and character:FindFirstChild("HumanoidRootPart")) then continue end
-            local hrp = character.HumanoidRootPart
-            local nearest, nd = nil, math.huge
-            local mons = Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
-            for _, m in pairs(mons) do
-                local prim = m:FindFirstChild("HumanoidRootPart") or m.PrimaryPart
-                if prim then
-                    local d = (hrp.Position - prim.Position).Magnitude
-                    if d < nd then nd = d; nearest = prim end
-                end
-            end
-            if nearest then
-                pcall(function()
-                    hrp.CFrame = nearest.CFrame
-                end)
-            end
-        end
-    end
-end)
-
-local GachaTab = Window:CreateTab("🎮 Gacha & Stats", "gamepad")
-local StarList = {}
-for i=1,28 do table.insert(StarList, "Star_"..i) end
-local SelectedStar = "Star_1"
-GachaTab:CreateDropdown({Name = "📦 Select Star Type", Options = StarList, CurrentOption = "Star_1", MultipleOptions = false, Flag = "GachaDropdown", Callback = function(opt) SelectedStar = opt end})
-GachaTab:CreateToggle({Name = "⭐ Auto Open Star (Max)", CurrentValue = false, Flag = "AutoOpenStar", Callback = function(v) getgenv().AutoOpenStar = v if v then task.spawn(function() while getgenv().AutoOpenStar do pcall(function() Events:FireServer({Open_Amount = getgenv().StarOpenAmount, Action = "_Stars", Name = SelectedStar}) end); task.wait(getgenv().StarOpenDelay) end end) end end})
-
-local function CreatePathAt(position)
-    local part = Instance.new("Part")
-    part.Size = Vector3.new(5,1,5)
-    part.Anchored = true
-    part.CanCollide = false
-    part.Transparency = 0.3
-    part.Color = Color3.fromRGB(50,255,100)
-    part.CFrame = CFrame.new(position - Vector3.new(0,3,0))
-    part.Parent = Workspace
-    Debris:AddItem(part, 1)
+local function safeCreate(class, props, parent)
+	local inst = Instance.new(class)
+	for k,v in pairs(props or {}) do inst[k] = v end
+	if parent then inst.Parent = parent end
+	return inst
 end
 
-local function IsMonsterAlive(monster)
-    if not monster or not monster.Parent then return false end
-    local att = monster:GetAttribute("Health")
-    if typeof(att) == "number" then
-        if att <= 0 then return false end
-        return true
-    end
-    local hum = monster:FindFirstChildOfClass("Humanoid")
-    if hum then
-        return hum.Health > 0
-    end
-    return true
+local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
+local isTablet = false
+if isMobile then
+	local viewportSize = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
+	isTablet = math.min(viewportSize.X, viewportSize.Y) > 700
 end
 
-local function FindTargetFromNames(names)
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not (char and char:FindFirstChild("HumanoidRootPart")) then return nil end
-    local hrp = char.HumanoidRootPart
-    local nearest = nil
-    local nd = math.huge
-    local mons = Workspace:FindFirstChild("Debris") and Workspace.Debris:FindFirstChild("Monsters") and Workspace.Debris.Monsters:GetChildren() or {}
-    for _, m in pairs(mons) do
-        local title = m:GetAttribute("Title") or m.Name
-        if table.find(names, title) and IsMonsterAlive(m) then
-            local prim = m:FindFirstChild("HumanoidRootPart") or m.PrimaryPart
-            if prim then
-                local d = (hrp.Position - prim.Position).Magnitude
-                if d < nd then nd = d; nearest = m end
-            end
-        end
-    end
-    return nearest
+local function getResponsiveSize()
+	if isMobile then
+		if isTablet then
+			return UDim2.new(0.85, 0, 0.8, 0)
+		else
+			return UDim2.new(0.95, 0, 0.85, 0)
+		end
+	else
+		return UDim2.new(0, 700, 0, 500)
+	end
 end
 
-local OriginalCollides = {}
-local function NoClip()
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not char then return end
-    OriginalCollides = {}
-    for _, part in pairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            OriginalCollides[part] = part.CanCollide
-            part.CanCollide = false
-        end
-    end
+local SupportedGames = {
+	[90462358603255] = "Anime Eternal"
+}
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local LoaderGui = safeCreate("ScreenGui", {Name = "SindexLoader", ResetOnSpawn = false, DisplayOrder = 10, ZIndexBehavior = Enum.ZIndexBehavior.Sibling}, CoreGui)
+
+local Main = safeCreate("Frame", {Size = getResponsiveSize(), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(10,10,15), BackgroundTransparency = 1, ClipsDescendants = true}, LoaderGui)
+
+local BackgroundGradient = safeCreate("UIGradient", {
+	Rotation = 45,
+	Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(25,15,40)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15,10,25)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(25,15,40))
+	}),
+	Transparency = NumberSequence.new(1)
+}, Main)
+
+local MainContainer = safeCreate("Frame", {Size = UDim2.new(1, -40, 1, -40), Position = UDim2.new(0.5, 0, 0.5, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(18,18,28), BackgroundTransparency = 1}, Main)
+safeCreate("UICorner", {CornerRadius = UDim.new(0, 24)}, MainContainer)
+
+local ContainerStroke = safeCreate("UIStroke", {
+	Color = Color3.fromRGB(120,70,200),
+	Thickness = 3,
+	Transparency = 1,
+	ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+}, MainContainer)
+
+local GlowEffect = safeCreate("ImageLabel", {
+	Size = UDim2.new(1, 80, 1, 80),
+	Position = UDim2.new(0.5, 0, 0.5, 0),
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	BackgroundTransparency = 1,
+	Image = "rbxassetid://8992231224",
+	ImageColor3 = Color3.fromRGB(100,50,180),
+	ScaleType = Enum.ScaleType.Slice,
+	SliceScale = 0.02,
+	SliceCenter = Rect.new(256,256,256,256),
+	ImageTransparency = 1,
+	ZIndex = 0
+}, MainContainer)
+
+local LogoContainer = safeCreate("Frame", {Size = UDim2.new(1, 0, 0, 120), Position = UDim2.new(0, 0, 0.1, 0), BackgroundTransparency = 1}, MainContainer)
+
+local LogoText = safeCreate("TextLabel", {
+	Size = UDim2.new(1, 0, 0, 60),
+	Position = UDim2.new(0.5, 0, 0, 0),
+	AnchorPoint = Vector2.new(0.5, 0),
+	BackgroundTransparency = 1,
+	Text = "PROJECT SINDEX",
+	TextColor3 = Color3.new(1,1,1),
+	FontFace = Font.new("rbxasset://fonts/families/FredokaOne.json"),
+	TextSize = 42,
+	TextTransparency = 1,
+	TextStrokeTransparency = 0.8,
+	TextStrokeColor3 = Color3.fromRGB(140,80,220)
+}, LogoContainer)
+
+local LogoGradient = safeCreate("UIGradient", {
+	Rotation = 90,
+	Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255,180,255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200,120,240)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(160,80,220))
+	})
+}, LogoText)
+
+local Subtitle = safeCreate("TextLabel", {
+	Size = UDim2.new(1, 0, 0, 30),
+	Position = UDim2.new(0.5, 0, 0, 70),
+	AnchorPoint = Vector2.new(0.5, 0),
+	BackgroundTransparency = 1,
+	Text = "PREMIUM EXPERIENCE • ELITE PERFORMANCE",
+	TextColor3 = Color3.fromRGB(180,180,220),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 14,
+	TextTransparency = 1,
+	TextTransparency = 1
+}, LogoContainer)
+
+local LoadingBarContainer = safeCreate("Frame", {
+	Size = UDim2.new(0.8, 0, 0, 20),
+	Position = UDim2.new(0.5, 0, 0.5, 0),
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	BackgroundColor3 = Color3.fromRGB(30,30,45),
+	BackgroundTransparency = 1,
+	ZIndex = 3
+}, MainContainer)
+safeCreate("UICorner", {CornerRadius = UDim.new(1, 0)}, LoadingBarContainer)
+
+local BarStroke = safeCreate("UIStroke", {
+	Color = Color3.fromRGB(80,80,120),
+	Thickness = 2,
+	Transparency = 1
+}, LoadingBarContainer)
+
+local LoadingBar = safeCreate("Frame", {
+	Size = UDim2.new(0, 0, 1, 0),
+	BackgroundColor3 = Color3.fromRGB(140,80,220),
+	BackgroundTransparency = 1,
+	ZIndex = 3
+}, LoadingBarContainer)
+safeCreate("UICorner", {CornerRadius = UDim.new(1, 0)}, LoadingBar)
+
+local BarGradient = safeCreate("UIGradient", {
+	Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(200,120,255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(140,80,220))
+	})
+}, LoadingBar)
+
+local BarGlow = safeCreate("ImageLabel", {
+	Size = UDim2.new(1, 20, 1, 20),
+	Position = UDim2.new(0.5, 0, 0.5, 0),
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	BackgroundTransparency = 1,
+	Image = "rbxassetid://8992231224",
+	ImageColor3 = Color3.fromRGB(180,100,240),
+	ScaleType = Enum.ScaleType.Slice,
+	SliceScale = 0.02,
+	SliceCenter = Rect.new(256,256,256,256),
+	ImageTransparency = 1,
+	ZIndex = 2
+}, LoadingBar)
+
+local StatusText = safeCreate("TextLabel", {
+	Size = UDim2.new(0.8, 0, 0, 20),
+	Position = UDim2.new(0.5, 0, 0.5, 40),
+	AnchorPoint = Vector2.new(0.5, 0),
+	BackgroundTransparency = 1,
+	Text = "Initializing...",
+	TextColor3 = Color3.fromRGB(200,200,230),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 16,
+	TextTransparency = 1,
+	ZIndex = 3
+}, MainContainer)
+
+local InfoContainer = safeCreate("Frame", {
+	Size = UDim2.new(0.8, 0, 0, 120),
+	Position = UDim2.new(0.5, 0, 0.75, 0),
+	AnchorPoint = Vector2.new(0.5, 0),
+	BackgroundColor3 = Color3.fromRGB(25,25,38),
+	BackgroundTransparency = 1,
+	ZIndex = 3
+}, MainContainer)
+safeCreate("UICorner", {CornerRadius = UDim.new(0, 16)}, InfoContainer)
+
+local InfoStroke = safeCreate("UIStroke", {
+	Color = Color3.fromRGB(80,80,120),
+	Thickness = 2,
+	Transparency = 1
+}, InfoContainer)
+
+local UsernameLabel = safeCreate("TextLabel", {
+	Size = UDim2.new(1, -20, 0, 25),
+	Position = UDim2.new(0, 10, 0, 10),
+	BackgroundTransparency = 1,
+	Text = "Username: ...",
+	TextColor3 = Color3.fromRGB(180,180,220),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 14,
+	TextTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left
+}, InfoContainer)
+
+local ExecutorLabel = safeCreate("TextLabel", {
+	Size = UDim2.new(1, -20, 0, 25),
+	Position = UDim2.new(0, 10, 0, 35),
+	BackgroundTransparency = 1,
+	Text = "Executor: ...",
+	TextColor3 = Color3.fromRGB(180,180,220),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 14,
+	TextTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left
+}, InfoContainer)
+
+local PlaceIdLabel = safeCreate("TextLabel", {
+	Size = UDim2.new(1, -20, 0, 25),
+	Position = UDim2.new(0, 10, 0, 60),
+	BackgroundTransparency = 1,
+	Text = "Place ID: ...",
+	TextColor3 = Color3.fromRGB(180,180,220),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 14,
+	TextTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left
+}, InfoContainer)
+
+local GameNameLabel = safeCreate("TextLabel", {
+	Size = UDim2.new(1, -20, 0, 25),
+	Position = UDim2.new(0, 10, 0, 85),
+	BackgroundTransparency = 1,
+	Text = "Game: ...",
+	TextColor3 = Color3.fromRGB(180,180,220),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Medium),
+	TextSize = 14,
+	TextTransparency = 1,
+	TextXAlignment = Enum.TextXAlignment.Left
+}, InfoContainer)
+
+local FloatingOrbs = safeCreate("Frame", {
+	Size = UDim2.new(1, 0, 1, 0),
+	BackgroundTransparency = 1,
+	ZIndex = 1
+}, MainContainer)
+
+local function createFloatingOrbs()
+	local orbs = {}
+	local colors = {
+		Color3.fromRGB(120,70,200),
+		Color3.fromRGB(200,100,220),
+		Color3.fromRGB(160,90,230),
+		Color3.fromRGB(140,80,210)
+	}
+	
+	for i = 1, 8 do
+		local orb = safeCreate("Frame", {
+			Size = UDim2.new(0, math.random(6,12), 0, math.random(6,12)),
+			Position = UDim2.new(math.random(), 0, math.random(), 0),
+			BackgroundTransparency = 1,
+			BackgroundColor3 = colors[math.random(1, #colors)],
+			ZIndex = 1
+		}, FloatingOrbs)
+		safeCreate("UICorner", {CornerRadius = UDim.new(1, 0)}, orb)
+		
+		table.insert(orbs, orb)
+	end
+	return orbs
 end
 
-local function Clip()
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not char then return end
-    for part, v in pairs(OriginalCollides) do
-        if part and part:IsA("BasePart") then
-            pcall(function() part.CanCollide = v end)
-        end
-    end
-    OriginalCollides = {}
+local Orbs = createFloatingOrbs()
+
+local function makeDraggable(frame)
+	local dragging = false
+	local dragInput, dragStart, startPos
+
+	local function update(input)
+		local delta = input.Position - dragStart
+		frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			update(input)
+		end
+	end)
 end
 
-local function TeleportTarget(targetPrim)
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
-    local hrp = char.HumanoidRootPart
-    pcall(function()
-        hrp.CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0)
-    end)
-    CreatePathAt(hrp.Position)
+makeDraggable(Main)
+
+local function animateOrbs(orbs)
+	for _, orb in ipairs(orbs) do
+		coroutine.wrap(function()
+			while orb.Parent do
+				local targetPos = UDim2.new(math.random(), 0, math.random(), 0)
+				local duration = math.random(20, 30) / 10
+				
+				TweenService:Create(orb, TweenInfo.new(duration, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+					Position = targetPos,
+					BackgroundTransparency = 0.3
+				}):Play()
+				
+				fastwait(duration / 2)
+				TweenService:Create(orb, TweenInfo.new(duration / 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+					BackgroundTransparency = 1
+				}):Play()
+				
+				fastwait(duration / 2)
+			end
+		end)()
+	end
 end
 
-local function TweenTarget(targetPrim)
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not (char and char:FindFirstChild("HumanoidRootPart")) then return end
-    local hrp = char.HumanoidRootPart
-    local info = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
-    local ok, tween = pcall(function() return TweenService:Create(hrp, info, {CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0)}) end)
-    if ok and tween then
-        tween:Play()
-        local suc = pcall(function() tween.Completed:Wait() end)
-        CreatePathAt(hrp.Position)
-    else
-        pcall(function() hrp.CFrame = CFrame.new(targetPrim.Position) + Vector3.new(0,3,0) end)
-        CreatePathAt(hrp.Position)
-    end
+local function updateProgress(progress, message)
+	StatusText.Text = message
+	TweenService:Create(LoadingBar, TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Size = UDim2.new(progress / 100, 0, 1, 0)
+	}):Play()
+	
+	if progress % 25 == 0 then
+		TweenService:Create(BarGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			ImageTransparency = 0.6
+		}):Play()
+		TweenService:Create(BarGlow, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			ImageTransparency = 1
+		}):Play()
+	end
 end
 
-local function WalkTargetTo(targetPos)
-    local player = Players.LocalPlayer
-    local char = player and player.Character
-    if not (char and char:FindFirstChildOfClass("Humanoid")) then return false end
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    NoClip()
-    humanoid:MoveTo(targetPos)
-    local start = tick()
-    while tick() - start < 12 do
-        if (char.PrimaryPart and (char.PrimaryPart.Position - targetPos).Magnitude or 0) < 6 then
-            Clip()
-            return true
-        end
-        task.wait(0.18)
-    end
-    Clip()
-    return false
+local function animateIn()
+	local t = 0.8
+	
+	TweenService:Create(Main, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 0
+	}):Play()
+	
+	TweenService:Create(BackgroundGradient, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Transparency = NumberSequence.new(0)
+	}):Play()
+	
+	TweenService:Create(MainContainer, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 0
+	}):Play()
+	
+	TweenService:Create(ContainerStroke, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Transparency = 0
+	}):Play()
+	
+	TweenService:Create(GlowEffect, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		ImageTransparency = 0.7
+	}):Play()
+	
+	TweenService:Create(LogoText, TweenInfo.new(t, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	TweenService:Create(Subtitle, TweenInfo.new(t + 0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0.3
+	}):Play()
+	
+	TweenService:Create(LoadingBarContainer, TweenInfo.new(t + 0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 0
+	}):Play()
+	
+	TweenService:Create(BarStroke, TweenInfo.new(t + 0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Transparency = 0
+	}):Play()
+	
+	TweenService:Create(LoadingBar, TweenInfo.new(t + 0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 0
+	}):Play()
+	
+	TweenService:Create(StatusText, TweenInfo.new(t + 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	animateOrbs(Orbs)
+	
+	fastwait(0.5)
+	
+	updateProgress(25, "Checking Game Support")
+	fastwait(1.2)
+	
+	if not SupportedGames[game.PlaceId] then
+		updateProgress(100, "Game Not Supported - Closing")
+		fastwait(1.5)
+		
+		local t2 = 0.6
+		TweenService:Create(Main, TweenInfo.new(t2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 1
+		}):Play()
+		
+		TweenService:Create(MainContainer, TweenInfo.new(t2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 1
+		}):Play()
+		
+		fastwait(t2)
+		LoaderGui:Destroy()
+		return
+	end
+	
+	updateProgress(50, "Game Supported - Loading Info")
+	
+	UsernameLabel.Text = "Username: " .. player.Name
+	ExecutorLabel.Text = "Executor: " .. identifyexecutor()
+	PlaceIdLabel.Text = "Place ID: " .. game.PlaceId
+	GameNameLabel.Text = "Game: " .. game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+	
+	TweenService:Create(InfoContainer, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 0
+	}):Play()
+	
+	TweenService:Create(InfoStroke, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Transparency = 0
+	}):Play()
+	
+	TweenService:Create(UsernameLabel, TweenInfo.new(0.8, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	TweenService:Create(ExecutorLabel, TweenInfo.new(0.9, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	TweenService:Create(PlaceIdLabel, TweenInfo.new(1.0, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	TweenService:Create(GameNameLabel, TweenInfo.new(1.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		TextTransparency = 0
+	}):Play()
+	
+	fastwait(1.5)
+	
+	updateProgress(75, "Loading Game Script")
+	fastwait(1.2)
+	
+	updateProgress(100, "Ready - Executing")
+	fastwait(1.0)
+	
+	if game.PlaceId == 90462358603255 then
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Sindex-Saliii/ProjectSindex/refs/heads/main/gateway.luau"))()
+	end
+	
+	local t3 = 0.8
+	TweenService:Create(Main, TweenInfo.new(t3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 1
+	}):Play()
+	
+	TweenService:Create(MainContainer, TweenInfo.new(t3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		BackgroundTransparency = 1
+	}):Play()
+	
+	TweenService:Create(ContainerStroke, TweenInfo.new(t3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Transparency = 1
+	}):Play()
+	
+	TweenService:Create(GlowEffect, TweenInfo.new(t3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		ImageTransparency = 1
+	}):Play()
+	
+	fastwait(t3)
+	LoaderGui:Destroy()
 end
 
-local function AttackTarget(monster)
-    if not monster or not monster.Parent then return end
-    while getgenv().AutoFarm and IsMonsterAlive(monster) do
-        Click()
-        task.wait(0.14)
-    end
-end
-
-task.spawn(function()
-    while task.wait(0.12) do
-        if getgenv().AutoFarm and next(getgenv().SelectedEnemyNames) ~= nil then
-            local target = FindTargetFromNames(getgenv().SelectedEnemyNames)
-            if target and target.Parent then
-                local prim = target:FindFirstChild("HumanoidRootPart") or target.PrimaryPart
-                if prim then
-                    if getgenv().FarmMethod == "Instant" then
-                        TeleportTarget(prim)
-                    elseif getgenv().FarmMethod == "Tween" then
-                        NoClip()
-                        TweenTarget(prim)
-                        Clip()
-                    else
-                        WalkTargetTo(prim.Position)
-                    end
-                    AttackTarget(target)
-                end
-            else
-                task.wait(0.6)
-            end
-        else
-            task.wait(0.4)
-        end
-    end
-end)
-
-task.spawn(function()
-    while task.wait(0.2) do
-        if getgenv().AutoFarm then
-            local player = Players.LocalPlayer
-            local char = player and player.Character
-            if not (char and char:FindFirstChild("HumanoidRootPart")) then continue end
-            if getgenv().FarmMethod == "Walk" then
-                for _, part in pairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end
-    end
-end)
-
-local function RefreshLoop()
-    while task.wait(5) do
-        UpdateEnemyLists()
-        SelectEnemy:Refresh(EnemyLists)
-    end
-end
-task.spawn(RefreshLoop)
+animateIn()
